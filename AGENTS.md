@@ -5,7 +5,7 @@ Instructions for AI coding agents (Claude Code, Codex, and others) working in th
 ## Purpose
 
 This repo is a reproducible guide and config set for a self-hosted smart home: Home Assistant in Docker
-on Ubuntu Server, running on an x86 mini PC (reference: Beelink Mini S13, Intel N150, 16 GB RAM, 500 GB SSD).
+on Ubuntu Server, running on an x86 mini PC (reference: Beelink Mini S13, Intel N150, 16 GB RAM, 512 GB SSD).
 
 Two audiences:
 1. **The owner** — uses git history to track and roll back any config.
@@ -28,16 +28,32 @@ adapt them to the user's hardware and devices. Ask which devices they own before
    instead: `~/Downloads`, `/opt/smart-home`, `/dev/diskN`, `/dev/sdX`, `<user>`. When you turn
    commands you ran into docs, rewrite them with variables or placeholders, and mark values the reader
    must replace (`# ← REPLACE`).
-3. **English only.** All files, comments, commit messages and docs are in English, even if the user
+3. **No personal or presence data.** The repo is public and tied to a real person. Never commit anything that
+   reveals where the owner lives or when the home is empty:
+   - home coordinates, zones and addresses (e.g. `homeassistant: latitude/longitude`, `zone:` entries);
+   - schedules and presence logic tied to real routines (when nobody is home, vacation mode dates, work hours);
+   - names of household members, phone or person entities, notification targets, Telegram chat/user IDs;
+   - floor plans or vacuum maps, room layouts beyond generic examples, camera names, streams or locations.
+   Write automations and docs with generic examples instead (`zone.home`, "when everyone leaves", `<CHAT_ID>`).
+4. **English only.** All files, comments, commit messages and docs are in English, even if the user
    talks to you in another language.
-4. **Generic first, specific separately.**
+5. **Generic first, specific separately.**
    - `docs/` and `docs/devices/<class>.md` describe a *class* of devices or a general procedure.
    - Model-specific configs and notes go to `devices/<class>/<vendor-model>/` (e.g.
      `devices/vacuum/roborock-q7-max/`). A model may be mentioned in generic docs only as an example.
    - Never hard-code one user's specific devices into shared configs in `stack/`.
-5. **Explain every command.** Each shell command in docs gets a short explanation of what it does and
+6. **Explain every command.** Each shell command in docs gets a short explanation of what it does and
    why. Mark commands that are destructive or need `sudo`.
-6. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
+7. **Backups are verified and monitored.** Every backup job follows
+   [0002. Backup principles](docs/decisions/0002-backup-principles.md): a separate physical device, an
+   integrity check after every run, a health check of the target (mounted, read/write test, free space,
+   filesystem errors), and alerts on failure *and* on missing runs.
+8. **Host configs live in `configs/`.** When you change a non-obvious config file on the server, update its copy
+   in `configs/` (with placeholders for machine-specific values) and the table in `configs/README.md`.
+   **Exception:** never publish the live security settings (firewall exceptions, IPv6 policy, fail2ban thresholds,
+   SSH authentication state). Document them as principles and options with example values that differ from the
+   real ones ([configs/security.md](configs/security.md)).
+9. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
    in the repo. Pin image versions (no `latest`) so a commit fully describes a working state.
 
 ## Repository layout
@@ -47,14 +63,18 @@ docs/                       # numbered step-by-step guides
 docs/devices/<class>.md     # generic guide per device class
 docs/decisions/NNNN-*.md    # architecture decision records; read before proposing structural changes
 stack/                      # docker-compose files, service configs, .env.example
+configs/<component>/        # verified host config files (fail2ban, docker, netplan, ...), see configs/README.md
 devices/<class>/<model>/    # model-specific examples: README.md + configs
 scripts/                    # helper scripts (backups, maintenance)
 ```
 
 ## Adding a device
 
+First check support and the integration's IoT class (prefer local) using the resources in
+[docs/devices/README.md](docs/devices/README.md).
+
 - **New class** (e.g. robot vacuum, Zigbee sensor, IP camera): create `docs/devices/<class>.md`
-  covering what the class is, integration options (official, HACS, MQTT, ...), trade-offs, and a
+  covering what the class is, integration options (official, community via Marketplace/HACS, MQTT, ...), trade-offs, and a
   generic setup procedure.
 - **New model**: create `devices/<class>/<vendor-model>/README.md` with the tested model, firmware or
   integration version, setup steps that differ from the generic guide, and example configs with

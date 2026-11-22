@@ -28,3 +28,6 @@ home-assistant_v2.db*
 .idea/
 .vscode/
 *.swp
+
+# Runtime data of stack services (when the stack runs from a clone of this repo)
+stack/homeassistant/

@@ -1,0 +1,13 @@
+# Not a full file: set these keys in /etc/avahi/avahi-daemon.conf (then: sudo systemctl restart avahi-daemon)
+# Docs: docs/03-ubuntu-install.md#avahi-settings
+#
+# [server]
+# Only real network interfaces: without this, avahi also announces the name on Docker's bridge (docker0, 172.17.0.1),
+# clients get an unreachable address and the name flaps.   <- REPLACE interface names (ip -br link)
+allow-interfaces=enp1s0,enp2s0,wlo1
+# Answer over IPv6 too: on some routers (IGMP snooping) IPv4 mDNS stops reaching the server, IPv6 keeps working.
+use-ipv6=yes
+#
+# [publish]
+publish-aaaa-on-ipv4=yes
+publish-a-on-ipv6=yes

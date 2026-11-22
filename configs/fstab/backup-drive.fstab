@@ -1,0 +1,5 @@
+# Append to: /etc/fstab   (then: sudo systemctl daemon-reload && sudo mount /mnt/backup)
+# Docs: docs/07-backups.md#mount-permanently-with-nofail
+# nofail: boot continues if the drive is missing; device-timeout: wait 10 s instead of 90 s; noatime: less flash wear.
+UUID=00000000-0000-0000-0000-000000000000  /mnt/backup  ext4  defaults,noatime,nofail,x-systemd.device-timeout=10s  0  2
+# ^ REPLACE the UUID: sudo blkid -s UUID -o value /dev/sdX1

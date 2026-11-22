@@ -1,0 +1,6 @@
+// Install to: /etc/apt/apt.conf.d/52unattended-upgrades-local
+// Docs: docs/04-base-setup.md#automatic-security-updates-with-automatic-reboot
+// Reboot at 04:00, only when an installed update requires it (e.g. a new kernel).
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "04:00";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";

@@ -16,7 +16,7 @@ agent walk you through the setup on your own hardware. Agent instructions live i
 | Mini PC   | Beelink Mini S13 |
 | CPU       | Intel N150 (4C/4T, up to 3.6 GHz) |
 | RAM       | 16 GB DDR4 |
-| Storage   | 500 GB SSD |
+| Storage   | 512 GB SSD |
 
 Any comparable x86-64 mini PC (Intel N100/N150/N200, etc.) should work with minor BIOS differences.
 
@@ -25,12 +25,15 @@ Any comparable x86-64 mini PC (Intel N100/N150/N200, etc.) should work with mino
 - **OS:** Ubuntu Server LTS
 - **Runtime:** Docker + Docker Compose
 - **Core:** Home Assistant (container)
-- **Backups:** scheduled local + off-site backups of configs and data
-- **Control & alerts:** Telegram bot
+- **Backups:** verified, health-checked and alerting backups to a separate drive, off-site later ([principles](docs/decisions/0002-backup-principles.md))
+- **Control & alerts:** Telegram bot, also the way to control the house remotely, without a public IP or open ports ([why](docs/decisions/0003-remote-access-via-telegram-bot.md))
 - **Devices:** integrations grouped by device class (vacuums, Zigbee, cameras, climate, ...)
 
 Everything runs as Docker containers on a single Ubuntu host — no Proxmox, no Home Assistant OS VM.
-See [why](docs/decisions/0001-docker-on-single-host.md).
+See [why](docs/decisions/0001-docker-on-single-host.md). Automations are built in Home Assistant itself, as
+YAML in git ([why](docs/decisions/0004-automations-in-home-assistant.md)).
+
+Before buying a device, check support: [docs/devices](docs/devices/README.md).
 
 ## Repository layout
 
@@ -38,14 +41,16 @@ See [why](docs/decisions/0001-docker-on-single-host.md).
 docs/                       # step-by-step guides, read in order
   01-hardware-bios.md       # BIOS: auto power-on after power loss, boot order
   02-install-media.md       # download, verify and write the Ubuntu Server USB stick
-  03-ubuntu-install.md      # OS install and base hardening
-  04-docker.md              # Docker and Compose
-  05-home-assistant.md      # Home Assistant deployment
-  06-backups.md             # backup jobs and restore procedure
-  07-telegram-bot.md        # Telegram bot for control and alerts
-  devices/<class>.md        # generic guide per device class
+  03-ubuntu-install.md      # OS install, SSH, mDNS, network
+  04-base-setup.md          # timezone, updates, firewall, fail2ban, watchdog, SSD health
+  05-docker.md              # Docker and Compose
+  06-home-assistant.md      # Home Assistant deployment
+  07-backups.md             # backup jobs and restore procedure
+  08-telegram-bot.md        # Telegram bot for control and alerts
+  devices/                  # device support resources, generic guide per device class
   decisions/                # architecture decision records (why things are done this way)
 stack/                      # docker-compose files, service configs, .env.example
+configs/                    # verified host config files by component (fail2ban, docker, netplan, ...)
 devices/<class>/<model>/    # concrete, model-specific examples (e.g. vacuum/roborock-q7-max)
 scripts/                    # helper scripts (backups, maintenance)
 ```
@@ -57,12 +62,15 @@ examples — add your own model next to them without touching the generic docs.
 
 - [x] [BIOS: power on after power loss, boot from USB](docs/01-hardware-bios.md)
 - [x] [Installation media: Ubuntu Server USB stick](docs/02-install-media.md)
-- [x] [Ubuntu Server install, IP reservation, SSH](docs/03-ubuntu-install.md)
-- [ ] Base server setup (updates, time, firewall)
-- [ ] Docker and Compose
-- [ ] Home Assistant container
-- [ ] Backups and restore
-- [ ] Telegram bot: control and alerts
+- [x] [Ubuntu Server install, SSH, mDNS, Wi-Fi](docs/03-ubuntu-install.md)
+- [x] [Base server setup: updates, firewall, fail2ban, watchdog, SSD health](docs/04-base-setup.md)
+- [x] [Docker and Compose](docs/05-docker.md)
+- [x] [Home Assistant container](docs/06-home-assistant.md)
+- [ ] Backups and restore ([backup drive](docs/07-backups.md#1-backup-drive) done)
+- [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅ (type fix planned), [air quality monitor](docs/devices/air-quality.md) (planned)
+- [ ] Matter, Zigbee (radio stick, Matter Server, Mosquitto, Zigbee2MQTT)
+- [ ] Dashboards (built-in Sections + Mushroom)
+- [ ] Telegram bot: control, alerts, remote scenarios
 - [ ] Device classes and model examples
 
 ## Using this repo with an AI agent

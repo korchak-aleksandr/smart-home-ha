@@ -1,0 +1,17 @@
+# Install to: /etc/systemd/system/watchdog-driver.service   (then: sudo systemctl daemon-reload && sudo systemctl enable watchdog-driver)
+# Docs: docs/04-base-setup.md#5-hardware-watchdog-auto-reboot-on-hangs
+# Load the Intel TCO hardware watchdog driver early at boot (AMD: replace iTCO_wdt with sp5100_tco).
+# Ubuntu deny-lists watchdog drivers, and modules-load.d honours that list; an explicit modprobe does not.
+[Unit]
+Description=Load Intel TCO hardware watchdog driver
+DefaultDependencies=no
+Before=sysinit.target
+ConditionPathExists=!/dev/watchdog0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/modprobe iTCO_wdt
+
+[Install]
+WantedBy=sysinit.target

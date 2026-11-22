@@ -1,0 +1,30 @@
+# Smart home stack. Deployed to /opt/smart-home on the server (see docs/06-home-assistant.md).
+#
+# Rules (docs/05-docker.md, docs/decisions/0001-docker-on-single-host.md):
+# - every image is pinned to an explicit version, never "latest";
+# - no bare "HOST:CONTAINER" port mappings (they bypass the firewall); use network_mode: host or bind to 127.0.0.1;
+# - runtime data lives next to this file in per-service directories, which are backed up and never committed.
+
+name: smart-home
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:2026.11.2
+    # Host networking: device discovery (mDNS/zeroconf, SSDP) and many local integrations need it,
+    # and the host firewall (ufw) applies to it, unlike published ports.
+    network_mode: host
+    environment:
+      TZ: ${TZ:?set TZ in .env}
+    volumes:
+      - ./homeassistant/config:/config    # all HA configuration and state
+      - /etc/localtime:/etc/localtime:ro  # same clock/timezone as the host
+      - /run/dbus:/run/dbus:ro            # Bluetooth: talk to the host's BlueZ (bluetoothd) over D-Bus
+    # Bluetooth adapter management (scanning, recovery). Narrow capabilities instead of privileged: true.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    # Ubuntu's default Docker AppArmor profile blocks D-Bus, which Bluetooth needs.
+    security_opt:
+      - apparmor:unconfined
+    restart: unless-stopped

@@ -1,0 +1,4 @@
+# Install to: /etc/udev/rules.d/81-wifi-powersave-off.rules   (then: sudo udevadm control --reload)
+# Docs: docs/03-ubuntu-install.md#turn-off-wi-fi-power-saving
+# Turn Wi-Fi power saving off whenever a Wi-Fi interface appears: a server mostly receives traffic.
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/sbin/iw dev $name set power_save off"
