@@ -1,0 +1,30 @@
+# Secrets and local values
+.env
+.env.*
+!.env.example
+secrets.yaml
+*.key
+*.pem
+*.crt
+
+# Backups and runtime data
+backups/
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Home Assistant runtime state
+.storage/
+.cloud/
+home-assistant_v2.db*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
