@@ -52,7 +52,8 @@ adapt them to the user's hardware and devices. Ask which devices they own before
    in `configs/` (with placeholders for machine-specific values) and the table in `configs/README.md`.
    **Exception:** never publish the live security settings (firewall exceptions, IPv6 policy, fail2ban thresholds,
    SSH authentication state). Document them as principles and options with example values that differ from the
-   real ones ([configs/security.md](configs/security.md)).
+   real ones ([configs/security.md](configs/security.md)). After changing any config on the server, run
+   `scripts/backup-private-configs.sh <host>` so the owner's local, git-ignored `private-configs/` stays current.
 9. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
    in the repo. Pin image versions (no `latest`) so a commit fully describes a working state.
 
@@ -66,6 +67,7 @@ stack/                      # docker-compose files, service configs, .env.exampl
 configs/<component>/        # verified host config files (fail2ban, docker, netplan, ...), see configs/README.md
 devices/<class>/<model>/    # model-specific examples: README.md + configs
 scripts/                    # helper scripts (backups, maintenance)
+private-configs/            # git-ignored, local only: live configs with real values (never commit)
 ```
 
 ## Adding a device

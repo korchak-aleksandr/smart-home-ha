@@ -4,6 +4,10 @@ Firewall, fail2ban and SSH settings are described here as principles, **not** as
 live config. Publishing a real server's exact exceptions and thresholds tells an attacker where the gaps are and how
 to stay under the limits. Pick your own values, and keep them out of public repos.
 
+To keep a private backup of the live configs on your workstation, use
+[`scripts/backup-private-configs.sh`](../scripts/backup-private-configs.sh). It copies them into a git-ignored
+`private-configs/` folder with its own local git history.
+
 ## Firewall (ufw)
 
 - Deny all incoming traffic by default, allow outgoing.
