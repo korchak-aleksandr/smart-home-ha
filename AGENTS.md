@@ -20,17 +20,24 @@ adapt them to the user's hardware and devices. Ask which devices they own before
    credentials, Wi-Fi passwords, real IP addresses, hostnames, MAC addresses, serial numbers or
    geolocation. Use placeholders (`<YOUR_BOT_TOKEN>`, `192.168.1.10`, `homeassistant.local`) and
    `*.example` files. Real values live only in git-ignored files (`.env`, `secrets.yaml`).
+   Vendor or ISP **default** addresses that are the same for every customer (e.g. a router's factory
+   admin IP) are fine to document.
    Before every commit, review the diff for anything that looks like a secret.
-2. **English only.** All files, comments, commit messages and docs are in English, even if the user
+2. **No paths or names from the owner's machines.** Local paths (home directories, usernames, working
+   folders, disk identifiers seen during a session) must never end up in the repo. Use generic examples
+   instead: `~/Downloads`, `/opt/smart-home`, `/dev/diskN`, `/dev/sdX`, `<user>`. When you turn
+   commands you ran into docs, rewrite them with variables or placeholders, and mark values the reader
+   must replace (`# ← REPLACE`).
+3. **English only.** All files, comments, commit messages and docs are in English, even if the user
    talks to you in another language.
-3. **Generic first, specific separately.**
+4. **Generic first, specific separately.**
    - `docs/` and `docs/devices/<class>.md` describe a *class* of devices or a general procedure.
    - Model-specific configs and notes go to `devices/<class>/<vendor-model>/` (e.g.
      `devices/vacuum/roborock-q7-max/`). A model may be mentioned in generic docs only as an example.
    - Never hard-code one user's specific devices into shared configs in `stack/`.
-4. **Explain every command.** Each shell command in docs gets a short explanation of what it does and
+5. **Explain every command.** Each shell command in docs gets a short explanation of what it does and
    why. Mark commands that are destructive or need `sudo`.
-5. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
+6. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
    in the repo. Pin image versions (no `latest`) so a commit fully describes a working state.
 
 ## Repository layout
@@ -38,6 +45,7 @@ adapt them to the user's hardware and devices. Ask which devices they own before
 ```
 docs/                       # numbered step-by-step guides
 docs/devices/<class>.md     # generic guide per device class
+docs/decisions/NNNN-*.md    # architecture decision records; read before proposing structural changes
 stack/                      # docker-compose files, service configs, .env.example
 devices/<class>/<model>/    # model-specific examples: README.md + configs
 scripts/                    # helper scripts (backups, maintenance)

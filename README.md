@@ -29,17 +29,22 @@ Any comparable x86-64 mini PC (Intel N100/N150/N200, etc.) should work with mino
 - **Control & alerts:** Telegram bot
 - **Devices:** integrations grouped by device class (vacuums, Zigbee, cameras, climate, ...)
 
+Everything runs as Docker containers on a single Ubuntu host — no Proxmox, no Home Assistant OS VM.
+See [why](docs/decisions/0001-docker-on-single-host.md).
+
 ## Repository layout
 
 ```
 docs/                       # step-by-step guides, read in order
   01-hardware-bios.md       # BIOS: auto power-on after power loss, boot order
-  02-ubuntu-install.md      # OS install and base hardening
-  03-docker.md              # Docker and Compose
-  04-home-assistant.md      # Home Assistant deployment
-  05-backups.md             # backup jobs and restore procedure
-  06-telegram-bot.md        # Telegram bot for control and alerts
+  02-install-media.md       # download, verify and write the Ubuntu Server USB stick
+  03-ubuntu-install.md      # OS install and base hardening
+  04-docker.md              # Docker and Compose
+  05-home-assistant.md      # Home Assistant deployment
+  06-backups.md             # backup jobs and restore procedure
+  07-telegram-bot.md        # Telegram bot for control and alerts
   devices/<class>.md        # generic guide per device class
+  decisions/                # architecture decision records (why things are done this way)
 stack/                      # docker-compose files, service configs, .env.example
 devices/<class>/<model>/    # concrete, model-specific examples (e.g. vacuum/roborock-q7-max)
 scripts/                    # helper scripts (backups, maintenance)
@@ -50,8 +55,10 @@ examples — add your own model next to them without touching the generic docs.
 
 ## Roadmap
 
-- [ ] BIOS: restore power on AC loss, boot settings
-- [ ] Ubuntu Server install and base setup
+- [x] [BIOS: power on after power loss, boot from USB](docs/01-hardware-bios.md)
+- [x] [Installation media: Ubuntu Server USB stick](docs/02-install-media.md)
+- [x] [Ubuntu Server install, IP reservation, SSH](docs/03-ubuntu-install.md)
+- [ ] Base server setup (updates, time, firewall)
 - [ ] Docker and Compose
 - [ ] Home Assistant container
 - [ ] Backups and restore
