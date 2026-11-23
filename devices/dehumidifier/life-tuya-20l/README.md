@@ -42,8 +42,8 @@ secret: anyone on the LAN who knows it can control the device. Never commit it.
 | 10 | `true` | ionizer |
 | 16 | `false` | child lock |
 | 17 | `"cancel"` | timer |
-| 19 | `32` | status/fault bitfield: 1 tank full or missing, 2 clean filter, 4 E1 temperature sensor, 8 CL too cold, 16 CH too hot, 32 LO humidity too low, 64 coil failure (per the Sygonix description) |
-| 20 | `true` | filter reset |
+| 19 | `32` | status/fault bitfield. **On this model `32` = filter cleaning reminder**: the Smart Life app shows *"It's time to clean your Smart Dehumidifier"* while it's set (seen both off and running). Other bits per the Sygonix description: 1 tank full or missing, 4 E1 temperature sensor, 8 CL too cold, 16 CH too hot, 64 coil failure. |
+| 20 | `true` | filter reset (should clear the `32` reminder after cleaning) |
 | 24 | `"c"` | temperature unit (`c`/`f`) |
 | 102 | `68` | model / client code (informational) |
 
@@ -67,8 +67,10 @@ Steps (the type can't be changed after setup):
 2. **Add integration → Tuya Local** → SmartLife cloud (the login is usually remembered) → confirm the prefilled
    connection details.
 3. At the device type step, choose **`Sygonix Smarter dehumidifier`**.
-4. Turn the dehumidifier on for a minute and check the *Problem* sensor and its description. Find out whether
-   DP 19 = `32` ("LO: humidity too low") is a real fault or just a normal status for this model. Write the result here.
-5. If the Sygonix description still doesn't fit, write a dedicated description for this model and contribute it
-   upstream to [tuya-local](https://github.com/make-all/tuya-local). Local edits inside `custom_components/` are
-   overwritten by updates.
+4. Result of the investigation: DP 19 = `32` stays set both off and running, and the Smart Life app shows *"It's time
+   to clean your Smart Dehumidifier"*. So on this model bit `32` is the **filter cleaning reminder**, not "LO: humidity
+   too low" as in the Sygonix description. The Sygonix description would therefore still show a false "Problem".
+5. Solution: a dedicated description for this model (based on Sygonix): temperature unit from DP 24, bit `32` mapped
+   to a *clean filter* sensor, *Problem* only for real faults, product ID `scpee7utfuawhrft` for automatic matching.
+   Contribute it upstream to [tuya-local](https://github.com/make-all/tuya-local): local files inside
+   `custom_components/` are overwritten by updates.
