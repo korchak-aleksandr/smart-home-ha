@@ -59,7 +59,6 @@ sudo ufw default deny incoming                       # block everything incoming
 sudo ufw default allow outgoing                      # the server may connect anywhere
 sudo ufw allow from 192.168.0.0/16 to any port 22 proto tcp comment "SSH from LAN"
 sudo ufw allow from 192.168.0.0/16 to any port 5353 proto udp comment "mDNS"
-sudo ufw allow from fe80::/10 to any port 5353 proto udp comment "mDNS IPv6 link-local"
 sudo ufw --force enable                              # activate now and at every boot
 sudo ufw status verbose
 ```
@@ -76,13 +75,20 @@ IPv6 has no NAT, so a global address is reachable from the internet **unless the
 inbound connections**. Many ISP routers do this by default, but check yours (often *Security → Firewall* or
 *IPv6 firewall*).
 
-When mDNS works only over IPv6 ([03, mDNS troubleshooting](03-ubuntu-install.md#mdns-troubleshooting)), clients get
-the server's global IPv6 address for `<hostname>.local`, so the firewall must let them in over IPv6. Options:
+To use `<hostname>.local` reliably, clients must be able to reach the server over IPv6 too. Phones and laptops
+resolve the name and connect over IPv6 whenever the server announces an IPv6 address, and some routers only deliver
+mDNS reliably over IPv6 ([03, mDNS troubleshooting](03-ubuntu-install.md#mdns-troubleshooting)). Over IPv6, allow
+**the services you use and mDNS itself (UDP 5353)**. Clients also send mDNS queries from their *global* IPv6 address
+straight to the server's global address, not only to the multicast group. If only `fe80::/10` is allowed, these
+queries are silently dropped, and the name resolves only sometimes. Options:
 
 | Option | Rule | Trade-off |
 |--------|------|-----------|
-| Strict | allow SSH/HA from your LAN prefix only, e.g. `sudo ufw allow proto tcp from 2001:db8:1:2::/64 to any port 22` | Safe without trusting the router. Update the rule if the ISP changes the prefix. |
-| Broad | allow SSH/HA over IPv6 from any address | Simple, but **only after confirming** the router blocks inbound IPv6 from the internet |
+| Strict | allow SSH, HA and UDP 5353 from link-local and your LAN prefix only, e.g. `sudo ufw allow proto udp from 2001:db8:1:2::/64 to any port 5353` | Safe without trusting the router. Update the rules if the ISP changes the prefix. |
+| Broad | allow SSH, HA and UDP 5353 over IPv6 from any address, e.g. `sudo ufw allow proto udp from ::/0 to any port 5353` | Simple, but **only after confirming** the router blocks inbound IPv6 from the internet |
+
+Check for dropped mDNS queries: `journalctl -k | grep 'UFW BLOCK' | grep DPT=5353`. Any hits with a `SRC=2…`
+address mean the IPv6 mDNS rule is missing.
 
 Also consider **stable-privacy IPv6 addresses**, so the address doesn't embed the network card's MAC (EUI-64) and
 can't be guessed: set `ipv6-address-generation: stable-privacy` for the interface in netplan.

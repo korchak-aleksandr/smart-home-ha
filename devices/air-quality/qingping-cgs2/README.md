@@ -25,7 +25,7 @@ Qingping's cloud. The cloud is used once, to push the broker settings to the dev
    server's IP changes, the device loses the broker, and changing its settings requires a **factory reset**.
    Reserve the server's IP on the router ([03, DHCP reservation](../../../docs/03-ubuntu-install.md#fallback-reserve-the-ip-address-on-the-router)).
 2. **Mosquitto** MQTT broker in the stack: `network_mode: host` so ufw applies, port 1883 open to the LAN only,
-   username/password auth. Planned in [06, components](../../../docs/06-home-assistant.md#6-planned-components).
+   username/password auth. Planned in [06, components](../../../docs/06-home-assistant.md#7-planned-components).
 3. Home Assistant **MQTT** integration connected to Mosquitto.
 4. The [qingping_cgs1](https://github.com/mash2k3/qingping_cgs1) integration, installed from HA's built-in **Marketplace** (formerly HACS).
 5. The device paired in the **Qingping+ / Qingping Home** app, with the **latest firmware**. The CGS1 guide requires

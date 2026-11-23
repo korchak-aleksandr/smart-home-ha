@@ -125,13 +125,21 @@ sudo systemctl restart avahi-daemon
 
 ### mDNS troubleshooting
 
-`<hostname>.local` stops resolving after a while, but works right after `sudo systemctl restart avahi-daemon`:
+`<hostname>.local` resolves only sometimes, or apps report "no connection":
 
-- **IGMP snooping on the router.** The router forwards IPv4 multicast (mDNS uses `224.0.0.251`) only to devices
+- **Firewall drops mDNS over IPv6.** Clients also send mDNS queries from their global IPv6 address directly to the
+  server's global address. Symptom: `journalctl -k | grep 'UFW BLOCK' | grep DPT=5353` shows hits with `SRC=2…`.
+  Fix: allow UDP 5353 over IPv6 ([04, IPv6](04-base-setup.md#ipv6)).
+
+- **IGMP snooping on the router** (the name works right after `sudo systemctl restart avahi-daemon`, then stops).
+  The router forwards IPv4 multicast (mDNS uses `224.0.0.251`) only to devices
   that recently joined the group, but never asks them to renew, so the membership expires. Symptom: on the server,
   `sudo tcpdump -ni wlo1 udp port 5353` shows no IPv4 queries from the client, while IPv6 (`fe80::…`) ones arrive.
   Fix: answer over IPv6 (avahi settings above), or turn off IGMP snooping on the router. Don't turn it off if IPTV
   runs through that router.
+- **Wi-Fi drops.** `journalctl | grep -E 'BEACON-LOSS|Lost carrier'` on the server shows when the connection to the
+  router was lost. The server reconnects by itself, and the name returns about a minute later. Frequent drops at
+  the same time of night usually come from the router (scheduled maintenance, automatic channel changes).
 - **Stale client cache** after an address change (e.g. Ethernet → Wi-Fi): wait ~2 minutes, or flush on macOS:
   `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`.
 - **Router DNS:** many ISP routers don't register DHCP hostnames in their DNS, so a plain `homeserver` (without

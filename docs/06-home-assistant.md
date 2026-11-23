@@ -108,7 +108,28 @@ In the browser at `http://homeserver.local:8123`:
 3. **Analytics:** optional, your choice.
 4. HA lists devices it discovered on the network. You can add them now or later.
 
-## 5. Updating Home Assistant
+## 5. Mobile app
+
+Install the official **Home Assistant** app (App Store / Google Play, by Nabu Casa). Always connect **by name**, not
+by IP:
+
+1. Join the home Wi-Fi with the phone.
+2. Open the app. It usually finds the server on its own via mDNS. Otherwise, enter `http://homeserver.local:8123`
+   (← REPLACE hostname).
+3. **iOS:** allow **Local Network** access when asked. Without it, the app can't see the server. If you denied it,
+   enable it under *Settings → Privacy & Security → Local Network → Home Assistant*.
+4. Log in with your HA account.
+5. In the app: **Settings → Companion App → (server) → Internal URL** = `http://homeserver.local:8123`, and add your
+   home Wi-Fi name under **Home network / SSIDs**. The app then knows it's at home and uses the local name.
+
+Optional during setup: **location** (presence for "arrived/left" automations; stays on your server) and
+**notifications** (pushed via Apple/Google, so they also arrive away from home). The app has no access away from home
+by design, see [0003](decisions/0003-remote-access-via-telegram-bot.md).
+
+If the app says *"no connection"* while at home, the cause is almost always name resolution. See
+[03, mDNS troubleshooting](03-ubuntu-install.md#mdns-troubleshooting).
+
+## 6. Updating Home Assistant
 
 Updates are deliberate: never automatic, always one commit.
 
@@ -125,7 +146,7 @@ Updates are deliberate: never automatic, always one commit.
 
 Find the current stable version: <https://github.com/home-assistant/core/releases/latest>.
 
-## 6. Planned components
+## 7. Planned components
 
 Home Assistant OS ships these as "apps" (add-ons). In a Container setup, each one is its own container in
 `stack/compose.yaml`, or a component inside HA's config directory. They get added as devices arrive:
@@ -144,7 +165,7 @@ Home Assistant OS ships these as "apps" (add-ons). In a Container setup, each on
 
 Check device support before buying: [docs/devices](devices/README.md).
 
-## 7. HTTPS (later)
+## 8. HTTPS (later)
 
 Let's Encrypt only issues certificates for **public domain names** it can verify. It can't issue them for `.local`
 names or private IPs. Two options for a server that isn't reachable from the internet:
