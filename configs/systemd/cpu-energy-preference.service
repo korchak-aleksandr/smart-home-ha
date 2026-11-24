@@ -1,0 +1,13 @@
+# Install to: /etc/systemd/system/cpu-energy-preference.service   (then: sudo systemctl enable --now cpu-energy-preference)
+# Docs: docs/04-base-setup.md#12-power-saving
+# Prefer energy efficiency over quick frequency boosts (intel_pstate EPP). Light server loads don't notice it.
+[Unit]
+Description=Set CPU energy/performance preference to balance_power
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'for f in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do echo balance_power > "$f"; done'
+
+[Install]
+WantedBy=multi-user.target

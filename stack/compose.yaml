@@ -107,7 +107,7 @@ services:
       - --listen_ip=127.0.0.1
       - --port=8081
       - --docker_only=true                                # only containers, not every systemd slice
-      - --housekeeping_interval=15s
+      - --housekeeping_interval=30s                     # = scrape interval; fewer wakeups
       - --store_container_labels=false
       - --whitelisted_container_labels=com.docker.compose.service
       # Keep cardinality low: per-CPU, per-process and network-protocol details aren't needed.

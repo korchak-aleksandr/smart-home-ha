@@ -64,6 +64,10 @@ With the stick plugged in, press `F7` repeatedly right after power on and choose
 - The SSD (`SSD 512GB`, firmware `Y1224A0`) supports SMART. `fwupd`: no BIOS/SSD updates on LVFS, only the UEFI dbx.
 - Secure Boot is **disabled** out of the box (`mokutil --sb-state`). Left as is, so the UEFI dbx update is skipped.
 
+- Power: cores reach C10, but the package stays in PC2/PC3 because the BIOS leaves **PCIe ASPM disabled** (root ports
+  and both I226-V NICs). ASPM is deliberately not forced on: I226-V + ASPM risks Ethernet link drops. Idle CPU package
+  ≈ 0.3–0.4 W (turbostat); about 6 W at the wall is the estimate used in Grafana.
+
 ## Status
 
 | Item | Status |

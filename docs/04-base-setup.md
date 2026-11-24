@@ -252,6 +252,67 @@ sudo apt install -y htop ncdu jq tmux git
 | `tmux` | terminal sessions that survive a dropped SSH connection |
 | `git` | version control |
 
+## 12. Power saving
+
+An always-on server should idle at the lowest power the hardware allows. Measure, don't guess:
+
+```bash
+sudo apt install -y linux-tools-common linux-tools-$(uname -r)     # provides turbostat
+sudo turbostat --quiet --show PkgWatt,CorWatt,Pkg%pc2,Pkg%pc3,Pkg%pc6,Pkg%pc8,Busy%,Bzy_MHz --interval 30 --num_iterations 1
+```
+
+- `Busy%`, `Bzy_MHz`: how much the CPU works. A home server should idle at single-digit percent.
+- `PkgWatt`: CPU package power. `Pkg%pcN`: how long the **whole SoC** sleeps in package C-state N. Deeper package states
+  (PC6–PC10) also power down the platform controller and put memory into self-refresh. That's where wall-socket
+  savings come from.
+
+### What's already right on Ubuntu Server
+
+- CPU frequency driver `intel_pstate` (HWP) with governor `powersave`: the hardware picks the frequency, and the cores
+  reach the deepest C-state (C10) most of the time. Check: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver`.
+- Integrated GPU RC6 (idle power gating), USB autosuspend, SATA link power management (`med_power_with_dipm`).
+
+### Tweaks applied here
+
+```bash
+# 1. NMI (soft lockup) watchdog off: it wakes the CPU periodically; hangs are covered by the hardware watchdog (step 5)
+echo "kernel.nmi_watchdog = 0" | sudo tee /etc/sysctl.d/91-nmi-watchdog.conf && sudo sysctl --system
+
+# 2. Energy/performance preference: prefer efficiency over quick frequency boosts (persistent via a boot service)
+sudo cp configs/systemd/cpu-energy-preference.service /etc/systemd/system/   # from this repo
+sudo systemctl daemon-reload && sudo systemctl enable --now cpu-energy-preference
+cat /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference      # expected: balance_power
+```
+
+3. cAdvisor collects every 30 s instead of 15 s (`--housekeeping_interval=30s`), so it wakes the system half as often.
+
+These are small gains (fractions of a watt). Wi-Fi power saving stays **off** on purpose
+([03, Wi-Fi power saving](03-ubuntu-install.md#turn-off-wi-fi-power-saving)).
+
+### PCIe ASPM: the big one, deliberately not enabled here
+
+If `turbostat` shows the package never going deeper than PC2/PC3 (`Pkg%pc6` = 0) while the cores sit in C10, a PCIe
+device usually keeps its link awake. Check whether **ASPM** (PCIe link power management) is disabled:
+
+```bash
+cat /sys/module/pcie_aspm/parameters/policy                 # [default] = whatever the BIOS set
+sudo lspci -vv | grep -E '^[0-9a-f]{2}:|LnkCtl:.*ASPM'      # "ASPM Disabled" per device
+```
+
+Enabling it typically saves **1–3 W at the wall** on mini PCs:
+
+```bash
+echo powersupersave | sudo tee /sys/module/pcie_aspm/parameters/policy     # try at runtime (revert: echo default)
+# permanent: add pcie_aspm.policy=powersupersave to GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub, then sudo update-grub
+```
+
+**Not used on the reference server**: its Ethernet ports are **Intel I226-V**, and ASPM on I225/I226 NICs under Linux is
+known for occasional link drops. A wired connection that silently hangs is worse than 1–3 W. Consider it if your
+mini PC has a different NIC, or if Ethernet isn't used at all.
+
+Reference values (Beelink Mini S13, idle, Home Assistant + monitoring stack running): `Busy%` ≈ 7–9%, `PkgWatt` ≈
+0.3–0.4 W, package in PC2/PC3 only (ASPM disabled by the BIOS).
+
 ## Verify after a reboot
 
 ```bash
@@ -267,5 +328,7 @@ systemctl is-active fail2ban smartd                   # active, active
 journalctl -b | grep -i 'hardware watchdog'           # watchdog in use
 sysctl kernel.panic                                   # 10
 systemctl is-enabled suspend.target                   # masked
+cat /proc/sys/kernel/nmi_watchdog                     # 0
+cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference   # balance_power
 systemctl --failed                                    # 0 loaded units listed
 ```
