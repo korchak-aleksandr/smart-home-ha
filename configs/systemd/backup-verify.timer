@@ -1,0 +1,11 @@
+# Install to: /etc/systemd/system/backup-verify.timer   (then: sudo systemctl enable --now backup-verify.timer)
+# Docs: docs/07-backups.md
+[Unit]
+Description=Weekly verification of backup archives
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

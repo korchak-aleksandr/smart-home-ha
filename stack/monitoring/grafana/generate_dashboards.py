@@ -69,6 +69,19 @@ P += [stat("CPU temperature", 'max(node_hwmon_temp_celsius{chip=~"platform_coret
       stat("Power (estimate)", POWER, 16, y, unit="watt", decimals=1, desc="CPU package power from Intel RAPL × factor + offset (see the Energy & cost dashboard). Not a wall-socket measurement."),
       stat("Scrape targets up", 'sum(up) / count(up)', 20, y, unit="percentunit", decimals=0, thresholds=th(RED, (0.99, GREEN)), color_mode="background")]
 y += 4
+P.append(row("Backups", y)); y += 1
+P += [stat("Last successful backup", "time() - max(smart_home_backup_last_success_timestamp_seconds)", 0, y, unit="s", decimals=0,
+           thresholds=th(GREEN, (26 * 3600, RED)), color_mode="background",
+           desc="Time since the last successful daily backup. Red after 26 h: the 03:00 run failed or didn't happen. Details: journalctl -u backup.service"),
+      stat("Last run", "max(smart_home_backup_last_run_success)", 4, y, thresholds=th(RED, (1, GREEN)), color_mode="background",
+           desc="1 = the last run succeeded. On failure, the failed step is in smart_home_backup_last_failed_step{step=...}."),
+      stat("Archives on drive", "max(smart_home_backup_archives)", 8, y, decimals=0, thresholds=th(RED, (1, GREEN))),
+      stat("Last archive size", "max(smart_home_backup_last_size_bytes)", 12, y, unit="bytes", decimals=1),
+      stat("Weekly verification", "min(smart_home_backup_verify_success)", 16, y, thresholds=th(RED, (1, GREEN)), color_mode="background",
+           desc="1 = every archive passed the checksum and zstd checks, read back from the drive."),
+      stat("Last verification", "time() - max(smart_home_backup_verify_timestamp_seconds)", 20, y, unit="s", decimals=0,
+           thresholds=th(GREEN, (8 * 86400, RED)))]
+y += 4
 P.append(row("Host", y)); y += 1
 P += [ts("CPU usage", [(f'100 * sum by (mode) (rate(node_cpu_seconds_total{{mode!="idle"}}[$__rate_interval])) / scalar(count(node_cpu_seconds_total{{mode="idle"}}))', "{{mode}}")], 0, y, unit="percent", stack=True),
       ts("Memory", [("node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes", "used"), ("node_memory_Cached_bytes + node_memory_Buffers_bytes", "cache/buffers"), ("node_memory_MemTotal_bytes", "total")], 12, y, unit="bytes")]

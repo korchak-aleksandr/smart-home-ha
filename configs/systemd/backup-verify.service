@@ -1,0 +1,11 @@
+# Install to: /etc/systemd/system/backup-verify.service
+# Docs: docs/07-backups.md
+[Unit]
+Description=Verify all backup archives on the backup drive
+RequiresMountsFor=/mnt/backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/smart-home-backup verify
+Nice=10
+IOSchedulingClass=idle

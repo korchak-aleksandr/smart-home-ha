@@ -1,0 +1,12 @@
+# Install to: /etc/systemd/system/backup.timer   (then: sudo systemctl enable --now backup.timer)
+# Docs: docs/07-backups.md
+[Unit]
+Description=Daily smart home backup
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+# Run at the next boot if the server was off at the scheduled time.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

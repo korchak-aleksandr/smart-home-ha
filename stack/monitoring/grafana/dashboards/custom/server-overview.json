@@ -724,7 +724,7 @@
   {
    "id": 14,
    "type": "row",
-   "title": "Host",
+   "title": "Backups",
    "collapsed": false,
    "gridPos": {
     "x": 0,
@@ -736,6 +736,346 @@
   },
   {
    "id": 15,
+   "type": "stat",
+   "title": "Last successful backup",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 10,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "time() - max(smart_home_backup_last_success_timestamp_seconds)",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 93600
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Time since the last successful daily backup. Red after 26 h: the 03:00 run failed or didn't happen. Details: journalctl -u backup.service"
+  },
+  {
+   "id": 16,
+   "type": "stat",
+   "title": "Last run",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 10,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(smart_home_backup_last_run_success)",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "description": "1 = the last run succeeded. On failure, the failed step is in smart_home_backup_last_failed_step{step=...}."
+  },
+  {
+   "id": 17,
+   "type": "stat",
+   "title": "Archives on drive",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 10,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(smart_home_backup_archives)",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 18,
+   "type": "stat",
+   "title": "Last archive size",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 10,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(smart_home_backup_last_size_bytes)",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 19,
+   "type": "stat",
+   "title": "Weekly verification",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 10,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "min(smart_home_backup_verify_success)",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "description": "1 = every archive passed the checksum and zstd checks, read back from the drive."
+  },
+  {
+   "id": 20,
+   "type": "stat",
+   "title": "Last verification",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 20,
+    "y": 10,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "time() - max(smart_home_backup_verify_timestamp_seconds)",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 691200
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 21,
+   "type": "row",
+   "title": "Host",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 22,
    "type": "timeseries",
    "title": "CPU usage",
    "datasource": {
@@ -744,7 +1084,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 10,
+    "y": 15,
     "w": 12,
     "h": 8
    },
@@ -783,7 +1123,7 @@
    }
   },
   {
-   "id": 16,
+   "id": 23,
    "type": "timeseries",
    "title": "Memory",
    "datasource": {
@@ -792,7 +1132,7 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 10,
+    "y": 15,
     "w": 12,
     "h": 8
    },
@@ -841,7 +1181,7 @@
    }
   },
   {
-   "id": 17,
+   "id": 24,
    "type": "timeseries",
    "title": "Temperatures",
    "datasource": {
@@ -850,7 +1190,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 18,
+    "y": 23,
     "w": 12,
     "h": 8
    },
@@ -899,7 +1239,7 @@
    }
   },
   {
-   "id": 18,
+   "id": 25,
    "type": "timeseries",
    "title": "Disk I/O",
    "datasource": {
@@ -908,7 +1248,7 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 18,
+    "y": 23,
     "w": 12,
     "h": 8
    },
@@ -952,7 +1292,7 @@
    }
   },
   {
-   "id": 19,
+   "id": 26,
    "type": "timeseries",
    "title": "Network",
    "datasource": {
@@ -961,7 +1301,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 26,
+    "y": 31,
     "w": 12,
     "h": 8
    },
@@ -1005,7 +1345,7 @@
    }
   },
   {
-   "id": 20,
+   "id": 27,
    "type": "timeseries",
    "title": "Wi-Fi",
    "datasource": {
@@ -1014,7 +1354,7 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 26,
+    "y": 31,
     "w": 12,
     "h": 8
    },
@@ -1064,20 +1404,20 @@
    "description": "Signal: -30 excellent, -67 good for streaming, below -75 unreliable."
   },
   {
-   "id": 21,
+   "id": 28,
    "type": "row",
    "title": "Containers",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 34,
+    "y": 39,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 22,
+   "id": 29,
    "type": "timeseries",
    "title": "CPU by container",
    "datasource": {
@@ -1086,7 +1426,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 35,
+    "y": 40,
     "w": 12,
     "h": 8
    },
@@ -1125,7 +1465,7 @@
    }
   },
   {
-   "id": 23,
+   "id": 30,
    "type": "timeseries",
    "title": "Memory by container",
    "datasource": {
@@ -1134,7 +1474,7 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 35,
+    "y": 40,
     "w": 12,
     "h": 8
    },

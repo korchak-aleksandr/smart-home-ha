@@ -1,0 +1,12 @@
+# Install to: /etc/systemd/system/backup.service   (script: scripts/backup.sh -> /usr/local/sbin/smart-home-backup)
+# Docs: docs/07-backups.md
+[Unit]
+Description=Smart home backup to the backup drive
+RequiresMountsFor=/mnt/backup
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/smart-home-backup run
+Nice=10
+IOSchedulingClass=idle

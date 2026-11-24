@@ -13,6 +13,7 @@ the table).
 | [`netplan/00-installer-config.yaml`](netplan/00-installer-config.yaml) | `/etc/netplan/` | [03, network](../docs/03-ubuntu-install.md#9-network-optional-interfaces-and-wi-fi-readiness) |
 | [`sysctl/90-panic-reboot.conf`](sysctl/90-panic-reboot.conf) | `/etc/sysctl.d/` | [04, kernel panic](../docs/04-base-setup.md#6-reboot-on-kernel-panic) |
 | [`sysctl/91-nmi-watchdog.conf`](sysctl/91-nmi-watchdog.conf) | `/etc/sysctl.d/` | [04, power saving](../docs/04-base-setup.md#12-power-saving) |
+| [`systemd/backup.service`](systemd/backup.service), [`backup.timer`](systemd/backup.timer), [`backup-verify.service`](systemd/backup-verify.service), [`backup-verify.timer`](systemd/backup-verify.timer) | `/etc/systemd/system/` | [07, backups](../docs/07-backups.md#3-install) |
 | [`systemd/cpu-energy-preference.service`](systemd/cpu-energy-preference.service) | `/etc/systemd/system/` | [04, power saving](../docs/04-base-setup.md#12-power-saving) |
 | [`systemd/journald-size.conf`](systemd/journald-size.conf) | `/etc/systemd/journald.conf.d/size.conf` | [04, journal](../docs/04-base-setup.md#8-cap-the-journal-size) |
 | [`systemd/watchdog-driver.service`](systemd/watchdog-driver.service) | `/etc/systemd/system/` | [04, watchdog](../docs/04-base-setup.md#5-hardware-watchdog-auto-reboot-on-hangs) |

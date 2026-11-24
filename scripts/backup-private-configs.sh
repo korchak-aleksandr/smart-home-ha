@@ -30,6 +30,11 @@ FILES=(
   /etc/sysctl.d/90-panic-reboot.conf
   /etc/sysctl.d/91-nmi-watchdog.conf
   /etc/systemd/system/cpu-energy-preference.service
+  /etc/systemd/system/backup.service
+  /etc/systemd/system/backup.timer
+  /etc/systemd/system/backup-verify.service
+  /etc/systemd/system/backup-verify.timer
+  /usr/local/sbin/smart-home-backup
   /etc/udev/rules.d/81-wifi-powersave-off.rules
   /opt/smart-home/compose.yaml
   /opt/smart-home/homeassistant/config/configuration.yaml

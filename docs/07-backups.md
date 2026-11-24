@@ -3,8 +3,15 @@
 All backups follow [0002. Backup principles](decisions/0002-backup-principles.md): a separate physical
 device, verification of every run, health checks of the target, and alerts on failure and on silence.
 
-This guide currently covers the **backup drive**. Backup jobs, verification, health checks and restore are
-added as they are implemented.
+| | |
+|---|---|
+| **What** | Home Assistant config and state (with a consistent DB snapshot), stack secrets (`.env`, `secrets/`), Grafana DB, host configs |
+| **Where** | the always-attached backup drive, `/mnt/backup/archives/` |
+| **Format** | one plain `backup-YYYY-MM-DD.tar.zst` per day + `.sha256`. Opens anywhere with `tar` + `zstd`, no special tool |
+| **When** | daily at 03:00 (runs at the next boot if missed). Verification of all archives weekly, Sunday 05:00 |
+| **Retention** | 7 days |
+| **Checks** | drive health before every run, read-back checksum after every run, full re-read weekly |
+| **Monitoring** | metrics for Grafana (*Server overview → Backups*), alerts later with the Telegram bot |
 
 ## 1. Backup drive
 
@@ -149,3 +156,125 @@ every backup run:
 Any failed check aborts the backup and sends an alert.
 
 Example drive: [SanDisk Cruzer Fit 16 GB](../devices/usb-storage/sandisk-cruzer-fit-16gb/README.md).
+
+## 2. What is backed up
+
+| Included | Path |
+|----------|------|
+| Home Assistant: config, `.storage` (accounts, integrations, device keys), automations, custom components | `/opt/smart-home/homeassistant/config` |
+| Home Assistant history DB, as a **consistent snapshot** (`sqlite3 .backup`, the SQLite online backup API: HA keeps running and writing) | `…/home-assistant_v2.db` |
+| Stack: compose file, `.env`, `secrets/`, monitoring config | `/opt/smart-home` |
+| Grafana's own DB (users, preferences; dashboards are in git anyway) | `/opt/smart-home/grafana/grafana.db` |
+| Host configs: netplan (incl. Wi-Fi), ufw, fail2ban, SSH server drop-ins, sudoers, Docker, systemd units, fstab, avahi, sysctl, udev, apt sources | `/etc/...` |
+
+| Not included | Why |
+|--------------|-----|
+| Metrics history (VictoriaMetrics) | Nice to have, not worth the size and the flash writes. Monitoring starts fresh after a restore. |
+| Grafana plugins, HA `.cache`, `tts`, logs | Re-created automatically |
+| Docker images | Versions are pinned in git and pulled again |
+| The OS itself | Reinstalled by following these guides |
+
+**No encryption** for the local drive: it's physically inside the server, and the data (Wi-Fi password, HA device keys,
+local service passwords) is low-value. Revisit when sensitive data appears. Off-site copies must be encrypted
+([0002](decisions/0002-backup-principles.md)).
+
+When a service with its own data directory is added to the stack (e.g. Mosquitto, Zigbee2MQTT), it goes into the
+backup in the same change.
+
+## 3. Install
+
+```bash
+sudo apt install -y sqlite3 zstd
+sudo install -m 755 scripts/backup.sh /usr/local/sbin/smart-home-backup          # from this repo, copied to the server
+sudo cp configs/systemd/backup.service configs/systemd/backup.timer \
+        configs/systemd/backup-verify.service configs/systemd/backup-verify.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now backup.timer backup-verify.timer
+sudo systemctl start backup.service                                             # first run now
+journalctl -u backup.service -o cat | tail -3                                   # "[backup] OK: backup-....tar.zst"
+systemctl list-timers 'backup*'                                                 # next runs
+```
+
+Settings (paths, retention, free-space threshold) are variables at the top of the script and can be overridden with
+`Environment=` in the service.
+
+## 4. How a run works
+
+`smart-home-backup run`. Every step aborts the run on failure and records the failed step in the metrics:
+
+1. **Drive health** (the checks from [Health checks](#health-checks-for-backup-jobs)): mounted and marked, not
+   read-only, ≥ 20% free, no ext4 errors, no kernel I/O errors in the last 24 h, 4 MiB write → read-back → checksum.
+2. **HA DB snapshot** with `sqlite3 .backup`, checked with `PRAGMA quick_check`.
+3. **Archive**: `tar` the included paths (excluding the live DB) + append the snapshot under the DB's original path,
+   compress with zstd.
+4. **Copy** to the drive as `*.partial`, flush.
+5. **Verify on the drive**: drop the file from the page cache, read it back **from the device**, compare SHA-256,
+   test zstd integrity. Only then rename to the final name and write `.sha256`.
+6. **Rotate**: delete archives older than 7 days. Only happens after a verified new archive exists.
+7. **Metrics** → `/var/lib/node_exporter/textfile/backup.prom`.
+
+`smart-home-backup verify` (weekly) re-reads **every** archive from the device and checks SHA-256 + zstd integrity.
+This also exercises the flash drive itself.
+
+> Reading "from the device": some USB flash drives reject `O_DIRECT` reads (`dd iflag=direct` fails with *Invalid
+> input*). The script drops the file's cached pages instead (`dd iflag=nocache count=0`) and then reads normally.
+
+## 5. Metrics
+
+| Metric | Meaning |
+|--------|---------|
+| `smart_home_backup_last_success_timestamp_seconds` | last successful run. Alert if older than 26 h |
+| `smart_home_backup_last_run_success` | 1/0 for the last run |
+| `smart_home_backup_last_failed_step{step="..."}` | where the last failed run stopped (`drive_mounted`, `drive_read_write`, `ha_db_snapshot`, ...) |
+| `smart_home_backup_last_duration_seconds`, `_last_size_bytes`, `_archives` | duration, newest archive size, archives on the drive |
+| `smart_home_backup_verify_success`, `_verify_timestamp_seconds`, `_verify_archives_checked/_failed` | weekly verification |
+
+Grafana: *Server overview → Backups*.
+
+## 6. Restore
+
+List and inspect:
+
+```bash
+sudo ls -l /mnt/backup/archives/
+sudo tar -I zstd -tvf /mnt/backup/archives/backup-YYYY-MM-DD.tar.zst | less     # contents
+```
+
+Paths in the archive are relative to `/` (e.g. `opt/smart-home/homeassistant/config/...`).
+
+### Home Assistant only
+
+Use the **same or a newer** HA version than at backup time: a newer HA migrates the DB, an older one can't open it.
+The version is pinned in `stack/compose.yaml` (git history has the version of any date).
+
+```bash
+cd /opt/smart-home
+docker compose stop homeassistant
+sudo mv homeassistant/config homeassistant/config.before-restore                 # keep the current state, just in case
+sudo tar -I zstd -xf /mnt/backup/archives/backup-YYYY-MM-DD.tar.zst -C / opt/smart-home/homeassistant/config
+docker compose start homeassistant
+```
+
+The archive's `home-assistant_v2.db` is the consistent snapshot, so no `-wal`/`-shm` files are needed. Devices come
+back as they were, as long as they weren't re-paired after the backup (re-pairing changes their keys). On new
+hardware, only the Bluetooth adapter is re-discovered.
+
+### A single file or host config
+
+```bash
+sudo tar -I zstd -xf /mnt/backup/archives/backup-YYYY-MM-DD.tar.zst -C /tmp/restore etc/fail2ban/jail.local
+```
+
+### Whole server (new SSD or new machine)
+
+1. Install Ubuntu and do the base setup by following guides 01–05.
+2. Plug in the backup drive, mount it ([section 1](#1-backup-drive)).
+3. Extract `opt/smart-home` (stack, secrets, Grafana DB, HA) and the needed `etc/...` files, then
+   `docker compose up -d` in `/opt/smart-home`.
+4. Re-fetch community dashboards ([08](08-monitoring.md)), re-run `systemctl daemon-reload`, and enable the timers.
+
+## Home Assistant's built-in backups: not used
+
+HA has its own backups (*Settings → System → Backups*), in its own encrypted format. They do the same for HA alone:
+a copy of the config with a consistent DB. The daily archive above covers HA plus secrets, Grafana and host configs,
+with drive checks and metrics, so the built-in feature stays off. Skip HA's "set up backups" prompt.
