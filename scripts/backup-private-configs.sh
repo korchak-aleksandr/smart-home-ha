@@ -5,9 +5,12 @@
 # run is a commit and you can see what changed on the server, and roll back.
 #
 # Usage: scripts/backup-private-configs.sh [ssh-host]     (default host: homeserver)
+#        SSH_OPTS="-o HostKeyAlias=homeserver.local" scripts/backup-private-configs.sh user@192.168.1.50   (by IP)
 # Secrets such as the Wi-Fi password are NOT copied (60-wifi.yaml is skipped).
 set -euo pipefail
 HOST="${1:-homeserver}"
+SSH_OPTS="${SSH_OPTS:-}"
+ssh() { command ssh $SSH_OPTS "$@"; }
 DEST="$(cd "$(dirname "$0")/.." && pwd)/private-configs"
 mkdir -p "$DEST"
 
@@ -27,6 +30,7 @@ FILES=(
   /etc/sysctl.d/90-panic-reboot.conf
   /etc/udev/rules.d/81-wifi-powersave-off.rules
   /opt/smart-home/compose.yaml
+  /opt/smart-home/homeassistant/config/configuration.yaml
 )
 
 # Pack on the server (as root, skipping missing paths), unpack locally under private-configs/server/.
