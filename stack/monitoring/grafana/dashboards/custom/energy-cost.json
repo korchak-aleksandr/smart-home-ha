@@ -538,7 +538,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      },
      "decimals": 1
     },

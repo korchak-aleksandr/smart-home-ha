@@ -396,7 +396,9 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0,
+      "axisSoftMax": 1
      },
      "decimals": 0
     },
@@ -451,7 +453,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -512,7 +515,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      },
      "decimals": 1
     },
@@ -566,7 +570,9 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0,
+      "axisSoftMax": 100
      },
      "decimals": 0
     },
@@ -615,7 +621,9 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0,
+      "axisSoftMax": 100
      },
      "decimals": 0
     },
@@ -664,7 +672,9 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0,
+      "axisSoftMax": 1
      },
      "decimals": 0
     },

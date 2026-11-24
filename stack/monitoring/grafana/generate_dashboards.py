@@ -21,12 +21,17 @@ def stat(title, expr, x, y, w=4, h=4, unit="none", decimals=None, thresholds=Non
     if desc: p["description"] = desc
     return p
 
-def ts(title, targets, x, y, w=12, h=8, unit="none", stack=False, desc=None, decimals=None):
+def ts(title, targets, x, y, w=12, h=8, unit="none", stack=False, desc=None, decimals=None, soft_min=0, soft_max=None):
+    # Axes start at 0 by default: auto-scaled axes make tiny changes (23 -> 24 C) look like cliffs.
+    # soft_min/soft_max only widen the axis; values outside still show (e.g. negative dBm).
     p = {"id": nid(), "type": "timeseries", "title": title, "datasource": DS,
          "gridPos": {"x": x, "y": y, "w": w, "h": h},
          "targets": [{"refId": chr(65 + i), "expr": e, "legendFormat": l} for i, (e, l) in enumerate(targets)],
          "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": True}, "tooltip": {"mode": "multi", "sort": "desc"}},
          "fieldConfig": {"defaults": {"unit": unit, "custom": {"lineWidth": 1, "fillOpacity": 15 if not stack else 40, "showPoints": "never", "stacking": {"mode": "normal" if stack else "none", "group": "A"}}}, "overrides": []}}
+    custom = p["fieldConfig"]["defaults"]["custom"]
+    if soft_min is not None: custom["axisSoftMin"] = soft_min
+    if soft_max is not None: custom["axisSoftMax"] = soft_max
     if decimals is not None: p["fieldConfig"]["defaults"]["decimals"] = decimals
     if desc: p["description"] = desc
     return p
@@ -83,7 +88,7 @@ P += [stat("Last successful backup", "time() - max(smart_home_backup_last_succes
            thresholds=th(GREEN, (8 * 86400, RED)))]
 y += 4
 P.append(row("Host", y)); y += 1
-P += [ts("CPU usage", [(f'100 * sum by (mode) (rate(node_cpu_seconds_total{{mode!="idle"}}[$__rate_interval])) / scalar(count(node_cpu_seconds_total{{mode="idle"}}))', "{{mode}}")], 0, y, unit="percent", stack=True),
+P += [ts("CPU usage", [(f'100 * sum by (mode) (rate(node_cpu_seconds_total{{mode!="idle"}}[$__rate_interval])) / scalar(count(node_cpu_seconds_total{{mode="idle"}}))', "{{mode}}")], 0, y, unit="percent", stack=True, soft_max=100),
       ts("Memory", [("node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes", "used"), ("node_memory_Cached_bytes + node_memory_Buffers_bytes", "cache/buffers"), ("node_memory_MemTotal_bytes", "total")], 12, y, unit="bytes")]
 y += 8
 P += [ts("Temperatures", [('node_hwmon_temp_celsius{chip=~"platform_coretemp.*", sensor="temp1"}', "CPU package"), ('smartctl_device_temperature{temperature_type="current"}', "SSD"), ('node_hwmon_temp_celsius{chip="thermal_thermal_zone0", sensor="temp0"}', "ACPI")], 0, y, unit="celsius"),
@@ -152,15 +157,15 @@ H += [stat("Home Assistant", 'max(up{job="homeassistant"})', 0, y, thresholds=th
       stat("HA CPU", 'sum(rate(container_cpu_usage_seconds_total{container="homeassistant"}[5m]))', 20, y, unit="percentunit", decimals=1)]
 y += 4
 H += [ts("Entity availability", [('hass_entity_available', "{{friendly_name}}")], 0, y, unit="none", decimals=0,
-         desc="1 = available, 0 = unavailable (per exported entity)."),
+         desc="1 = available, 0 = unavailable (per exported entity).", soft_max=1),
       ts("HA process", [('rate(process_cpu_seconds_total{job="homeassistant"}[$__rate_interval])', "CPU (cores)"), ('process_resident_memory_bytes{job="homeassistant"} / 1e9', "memory (GB)")], 12, y)]
 y += 8
 H.append(row("Home", y)); y += 1
 H += [ts("Temperature", [("hass_sensor_temperature_celsius", "{{friendly_name}}")], 0, y, unit="celsius", decimals=1),
-      ts("Humidity", [("hass_sensor_humidity_percent", "{{friendly_name}}"), ("hass_humidifier_target_humidity_percent", "{{friendly_name}} target")], 12, y, unit="percent", decimals=0)]
+      ts("Humidity", [("hass_sensor_humidity_percent", "{{friendly_name}}"), ("hass_humidifier_target_humidity_percent", "{{friendly_name}} target")], 12, y, unit="percent", decimals=0, soft_max=100)]
 y += 8
-H += [ts("Batteries", [("hass_sensor_battery_percent", "{{friendly_name}}")], 0, y, unit="percent", decimals=0),
-      ts("Dehumidifiers on/off", [("hass_humidifier_state", "{{friendly_name}}")], 12, y, decimals=0)]
+H += [ts("Batteries", [("hass_sensor_battery_percent", "{{friendly_name}}")], 0, y, unit="percent", decimals=0, soft_max=100),
+      ts("Dehumidifiers on/off", [("hass_humidifier_state", "{{friendly_name}}")], 12, y, decimals=0, soft_max=1)]
 y += 8
 json.dump(dashboard("home-assistant", "Home Assistant", H, desc="HA health (unavailable entities, updates, resources) and allow-listed home sensors."),
           open(f"{OUT}/home-assistant.json", "w"), indent=1)

@@ -1116,7 +1116,9 @@
       "stacking": {
        "mode": "normal",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0,
+      "axisSoftMax": 100
      }
     },
     "overrides": []
@@ -1174,7 +1176,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -1232,7 +1235,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -1285,7 +1289,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -1338,7 +1343,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -1396,7 +1402,8 @@
       "stacking": {
        "mode": "none",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -1458,7 +1465,8 @@
       "stacking": {
        "mode": "normal",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
@@ -1506,7 +1514,8 @@
       "stacking": {
        "mode": "normal",
        "group": "A"
-      }
+      },
+      "axisSoftMin": 0
      }
     },
     "overrides": []
