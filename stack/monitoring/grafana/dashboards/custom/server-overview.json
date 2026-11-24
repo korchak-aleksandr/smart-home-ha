@@ -24,7 +24,7 @@
    {
     "name": "offset",
     "type": "constant",
-    "query": "0",
+    "query": "6",
     "hide": 2
    }
   ]

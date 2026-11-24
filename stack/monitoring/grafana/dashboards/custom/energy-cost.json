@@ -41,10 +41,10 @@
     "name": "offset",
     "label": "Offset, W",
     "type": "textbox",
-    "query": "0",
+    "query": "6",
     "current": {
-     "text": "0",
-     "value": "0"
+     "text": "6",
+     "value": "6"
     },
     "description": "Constant watts added for SSD, Wi-Fi, PSU losses. Calibrate with a wall power meter if you have one."
    }

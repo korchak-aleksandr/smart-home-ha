@@ -32,7 +32,8 @@ machines. Versions are pinned in [`stack/compose.yaml`](../stack/compose.yaml).
 stack/compose.yaml                              # services (monitoring section)
 stack/monitoring/scrape.yaml                    # what VictoriaMetrics scrapes
 stack/monitoring/grafana/provisioning/          # datasource + dashboard providers (as code)
-stack/monitoring/grafana/dashboards/custom/     # our dashboards (committed)
+stack/monitoring/grafana/generate_dashboards.py # generates our dashboards: edit this, not the JSON
+stack/monitoring/grafana/dashboards/custom/     # our dashboards (generated JSON, committed)
 stack/monitoring/grafana/dashboards/community/  # grafana.com dashboards (downloaded, git-ignored)
 stack/ha-packages/monitoring.yaml               # HA: Prometheus export allow-list + "unavailable entities" sensor
 scripts/fetch-grafana-dashboards.sh             # downloads community dashboards at pinned revisions
@@ -91,7 +92,10 @@ needs a restart after `rsync`.
      'sudo install -D -m 644 /tmp/monitoring.yaml /opt/smart-home/homeassistant/config/packages/monitoring.yaml && cd /opt/smart-home && docker compose restart homeassistant'
    ```
    It enables HA's [Prometheus integration](https://www.home-assistant.io/integrations/prometheus/) with an
-   **allow-list** (unavailable-entities counter, updates, batteries, humidity/temperature, dehumidifiers, vacuums).
+   **allow-list**: updates, batteries, humidity/temperature sensors, dehumidifiers, vacuums. Only what HA exports
+   natively goes to Grafana: entity states and availability (`hass_entity_available`), plus HA's process metrics.
+   Nothing is computed or added on the HA side. Everything else (e.g. attributes that aren't exported) is viewed in HA
+   itself.
 3. Create a token for VictoriaMetrics: HA → your profile → **Security → Long-lived access tokens → Create**, name it
    `victoriametrics`. Save it on the server **without pasting it anywhere else** (it asks for the token, hidden):
    ```bash
@@ -113,6 +117,7 @@ needs a restart after `rsync`.
 |--------|-----------|--------|
 | Home server | **Server overview** (home page): now-values, host, temperatures, Wi-Fi, containers | this repo |
 | Home server | **Energy & cost**: power, kWh and € for the selected range, projections per month and year | this repo |
+| Home server | **Home Assistant**: HA up, unavailable exported entities, pending updates, HA CPU/memory, temperature, humidity, batteries | this repo |
 | Community | Node Exporter Full (1860) | grafana.com, pinned revision |
 | Community | Docker monitoring (15798) | grafana.com, pinned revision |
 | Community | SMARTctl Exporter Dashboard (22604) | grafana.com, pinned revision |
@@ -130,9 +135,12 @@ power ≈ RAPL package power × factor + offset          (variables "RAPL factor
 cost  = energy (kWh) × price                          (variable "Price, €/kWh")
 ```
 
-Set the variables at the top of the dashboard. On an Intel N-series mini PC, the CPU package idles below 1 W while the
-whole box typically draws several watts at the wall, so `factor` alone underestimates a lot. Add an **offset** for the
-rest of the system, ideally calibrated once with a plug-in power meter.
+Set the variables at the top of the dashboard. On an Intel N-series mini PC, the CPU package idles at **~0.5 W**
+(measured on the reference server) while the whole box draws several watts at the wall, so `factor` alone
+underestimates about tenfold. The default **offset is 6 W**: the near-identical Beelink EQ14 (same N150) was
+[measured at ~6.2 W idle at the wall](https://minipclab.com/blog/mini-pc-power-consumption-guide). Calibrate it with a
+plug-in power meter if you have one. With the defaults (factor 1.3, offset 6 W, €0.337/kWh), the reference server comes
+out at roughly **6.7 W, ~60 kWh and ~€20 per year**.
 
 **Price** = the *marginal* price per kWh from your bill (the server doesn't change fixed charges). Example for Cyprus
 EAC tariff 01 (Domestic): generation €0.1789 + network €0.0393 + fuel adjustment (changes every bill, e.g. €0.0973)
