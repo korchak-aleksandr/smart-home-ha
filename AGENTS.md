@@ -48,13 +48,16 @@ adapt them to the user's hardware and devices. Ask which devices they own before
    [0002. Backup principles](docs/decisions/0002-backup-principles.md): a separate physical device, an
    integrity check after every run, a health check of the target (mounted, read/write test, free space,
    filesystem errors), and alerts on failure *and* on missing runs.
-8. **Host configs live in `configs/`.** When you change a non-obvious config file on the server, update its copy
+8. **Everything in Docker is monitored.** Every container gets cAdvisor metrics automatically. Every service with a
+   metrics endpoint gets a scrape job in `stack/monitoring/scrape.yaml` in the same change
+   ([0005. Monitoring](docs/decisions/0005-monitoring.md)).
+9. **Host configs live in `configs/`.** When you change a non-obvious config file on the server, update its copy
    in `configs/` (with placeholders for machine-specific values) and the table in `configs/README.md`.
    **Exception:** never publish the live security settings (firewall exceptions, IPv6 policy, fail2ban thresholds,
    SSH authentication state). Document them as principles and options with example values that differ from the
    real ones ([configs/security.md](configs/security.md)). After changing any config on the server, run
    `scripts/backup-private-configs.sh <host>` so the owner's local, git-ignored `private-configs/` stays current.
-9. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
+10. **Configs are complete and copy-pasteable.** Every compose file and config referenced in docs exists
    in the repo. Pin image versions (no `latest`) so a commit fully describes a working state.
 
 ## Repository layout

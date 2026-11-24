@@ -1,0 +1,43 @@
+# Scrape targets for VictoriaMetrics (Prometheus-compatible format).
+# Rule: every service in compose.yaml is covered. Containers via cAdvisor, plus the service's own /metrics
+# endpoint when it has one (docs/decisions/0005-monitoring.md).
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: node                    # host: CPU, memory, disks, network, Wi-Fi, temperatures, RAPL energy
+    static_configs:
+      - targets: ["127.0.0.1:9100"]
+
+  - job_name: cadvisor                # every Docker container: CPU, memory, network, disk I/O, restarts
+    static_configs:
+      - targets: ["127.0.0.1:8081"]
+    metric_relabel_configs:
+      # Standard label names used by community dashboards: container = container name, service = compose service.
+      - source_labels: [name]
+        target_label: container
+      - source_labels: [container_label_com_docker_compose_service]
+        target_label: service
+      - action: labeldrop
+        regex: container_label_com_docker_compose_service
+
+  - job_name: smartctl                # SSD health (SMART)
+    scrape_interval: 60s
+    static_configs:
+      - targets: ["127.0.0.1:9633"]
+
+  - job_name: victoriametrics         # the metrics database itself
+    static_configs:
+      - targets: ["127.0.0.1:8428"]
+
+  - job_name: grafana
+    static_configs:
+      - targets: ["127.0.0.1:3000"]
+
+  - job_name: homeassistant           # allow-listed HA entities (stack/ha-packages/monitoring.yaml)
+    metrics_path: /api/prometheus
+    authorization:
+      credentials_file: /etc/secrets/ha-prometheus-token   # HA long-lived token, created on the server only
+    static_configs:
+      - targets: ["127.0.0.1:8123"]

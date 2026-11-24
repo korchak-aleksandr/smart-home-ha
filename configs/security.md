@@ -18,7 +18,7 @@ To keep a private backup of the live configs on your workstation, use
   - allow IPv6 only from link-local (`fe80::/10`) and your LAN prefix (strict; update the rule if the ISP changes
     the prefix), or
   - allow IPv6 more broadly, but **only after confirming** that the router blocks inbound IPv6 from the internet.
-- Ports that usually need LAN access: SSH, the Home Assistant UI, mDNS (UDP 5353), plus per-device needs (e.g. Tuya
+- Ports that usually need LAN access: SSH, the Home Assistant UI, Grafana, mDNS (UDP 5353), plus per-device needs (e.g. Tuya
   discovery broadcasts, UDP 6666–6667 and 7000).
 - If you reach the server by `<hostname>.local`, allow **mDNS over IPv6 too**, not only from `fe80::/10`. Clients query
   from their global IPv6 addresses, and dropping those makes the name resolve only sometimes.

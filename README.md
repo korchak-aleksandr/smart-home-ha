@@ -46,7 +46,8 @@ docs/                       # step-by-step guides, read in order
   05-docker.md              # Docker and Compose
   06-home-assistant.md      # Home Assistant deployment
   07-backups.md             # backup jobs and restore procedure
-  08-telegram-bot.md        # Telegram bot for control and alerts
+  08-monitoring.md          # VictoriaMetrics + Grafana: host, disks, Wi-Fi, containers, HA, energy cost
+  09-telegram-bot.md        # Telegram bot for control and alerts
   devices/                  # device support resources, generic guide per device class
   decisions/                # architecture decision records (why things are done this way)
 stack/                      # docker-compose files, service configs, .env.example
@@ -66,6 +67,7 @@ examples — add your own model next to them without touching the generic docs.
 - [x] [Base server setup: updates, firewall, fail2ban, watchdog, SSD health](docs/04-base-setup.md)
 - [x] [Docker and Compose](docs/05-docker.md)
 - [x] [Home Assistant container](docs/06-home-assistant.md)
+- [x] [Monitoring: VictoriaMetrics, Grafana, exporters, energy cost estimate](docs/08-monitoring.md)
 - [ ] Backups and restore ([backup drive](docs/07-backups.md#1-backup-drive) done)
 - [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅, [air quality monitor](docs/devices/air-quality.md) (planned)
 - [ ] Matter, Zigbee (radio stick, Matter Server, Mosquitto, Zigbee2MQTT)

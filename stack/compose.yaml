@@ -28,3 +28,119 @@ services:
     security_opt:
       - apparmor:unconfined
     restart: unless-stopped
+
+  # ---------------------------------------------------------------------------------------------------------------
+  # Monitoring (docs/08-monitoring.md, docs/decisions/0005-monitoring.md).
+  # Every service runs on the host network and listens on 127.0.0.1 only, except Grafana (LAN, via ufw).
+  # VictoriaMetrics scrapes everything listed in monitoring/scrape.yaml.
+  # ---------------------------------------------------------------------------------------------------------------
+
+  victoriametrics:
+    container_name: victoriametrics
+    image: victoriametrics/victoria-metrics:v1.156.0
+    network_mode: host
+    command:
+      - -httpListenAddr=127.0.0.1:8428                    # API + vmui, local only (use Grafana Explore instead)
+      - -storageDataPath=/storage
+      - -retentionPeriod=1y
+      - -promscrape.config=/etc/monitoring/scrape.yaml
+      - -promscrape.configCheckInterval=30s               # pick up scrape.yaml changes without a restart
+    volumes:
+      - ./victoriametrics:/storage
+      # Mount the directory, not the single file: tools like rsync replace files, and a single-file bind mount
+      # would keep showing the old version.
+      - ./monitoring:/etc/monitoring:ro
+      - ./secrets:/etc/secrets:ro                       # tokens for authenticated targets (HA), not in git
+    restart: unless-stopped
+
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v1.13.1
+    network_mode: host
+    pid: host
+    user: root                                            # RAPL energy counters are readable by root only
+    command:
+      - --path.rootfs=/host
+      # Read sysfs through the host mount: Docker masks /sys/devices/virtual/powercap (RAPL) inside containers.
+      - --path.sysfs=/host/sys
+      - --path.udev.data=/host/run/udev/data
+      - --web.listen-address=127.0.0.1:9100
+      - --collector.wifi                                  # signal, bitrate, retries of Wi-Fi interfaces
+      # Collectors for hardware/features this server doesn't have (they only report scrape errors).
+      - --no-collector.bcachefs
+      - --no-collector.bonding
+      - --no-collector.conntrack
+      - --no-collector.fibrechannel
+      - --no-collector.ipvs
+      - --no-collector.nfs
+      - --no-collector.nfsd
+      - --no-collector.nvme
+      - --no-collector.tapestats
+      - --no-collector.zfs
+      - --collector.textfile.directory=/host/var/lib/node_exporter/textfile   # custom metrics (backups, ...)
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|var/lib/docker/.+|var/lib/containerd/.+|snap/.+)($|/)
+    volumes:
+      - /:/host:ro,rslave
+    restart: unless-stopped
+
+  smartctl-exporter:
+    container_name: smartctl-exporter
+    image: prometheuscommunity/smartctl-exporter:v0.15.0
+    network_mode: host
+    user: root
+    command:
+      - --web.listen-address=127.0.0.1:9633
+      - --smartctl.device-exclude=^sd[b-z]$               # USB flash drives have no SMART; system SSD is sda
+    # Raw ATA/SCSI commands need these two capabilities and the disk device itself.
+    cap_add:
+      - SYS_RAWIO
+      - SYS_ADMIN
+    devices:
+      - /dev/sda
+    restart: unless-stopped
+
+  cadvisor:
+    container_name: cadvisor
+    image: ghcr.io/google/cadvisor:v0.61.1
+    network_mode: host
+    command:
+      - --listen_ip=127.0.0.1
+      - --port=8081
+      - --docker_only=true                                # only containers, not every systemd slice
+      - --housekeeping_interval=15s
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.service
+      # Keep cardinality low: per-CPU, per-process and network-protocol details aren't needed.
+      - --disable_metrics=percpu,process,sched,tcp,udp,advtcp,hugetlb,referenced_memory,cpu_topology,resctrl,cpuset,memory_numa
+    # Reads container metadata from the Docker socket under /var/run. Trusted infrastructure exporter only,
+    # see docs/decisions/0005-monitoring.md.
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:13.3.1
+    network_mode: host                                    # LAN access on port 3000, controlled by ufw
+    environment:
+      GF_SERVER_HTTP_PORT: "3000"
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}   # used on first start only
+      GF_AUTH_ANONYMOUS_ENABLED: "true"                   # view without login inside the home network
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_VIEWERS_CAN_EDIT: "true"                   # viewers can use Explore (changes can't be saved)
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/custom/server-overview.json
+      TZ: ${TZ:?set TZ in .env}
+    volumes:
+      - ./grafana:/var/lib/grafana                        # Grafana's own database (users, preferences)
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+    restart: unless-stopped

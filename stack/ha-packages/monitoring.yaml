@@ -1,0 +1,40 @@
+# Home Assistant package: metrics for VictoriaMetrics (docs/08-monitoring.md).
+# Install to: /opt/smart-home/homeassistant/config/packages/monitoring.yaml
+# Requires in configuration.yaml:
+#   homeassistant:
+#     packages: !include_dir_named packages
+#
+# Exports an ALLOW-LIST of entities at /api/prometheus: HA health, updates, batteries and climate.
+# Other entities stay in HA's own history; there's no need to duplicate everything.
+
+prometheus:
+  namespace: hass
+  filter:
+    include_entity_globs:
+      - sensor.ha_unavailable_entities   # health: how many entities are unavailable right now
+      - update.*                         # pending updates of HA core and integrations
+      - sensor.*battery*                 # device batteries
+      - sensor.*humidity*                # climate (entity IDs follow the HA language,
+      - sensor.*temperatur*              #   e.g. "..._temperature" or "..._temperatura")
+      - humidifier.*                     # dehumidifiers: target/current humidity, on/off
+      - vacuum.*                         # robot vacuums: state
+
+template:
+  - sensor:
+      - name: HA unavailable entities
+        unique_id: ha_unavailable_entities
+        icon: mdi:lan-disconnect
+        state_class: measurement
+        # Entities that should have a state but don't (a device or integration is down).
+        # Buttons, scenes, events and updates have no meaningful state, so they're skipped.
+        state: >
+          {{ states
+             | rejectattr('domain', 'in', ['button', 'event', 'scene', 'update', 'input_button'])
+             | selectattr('state', 'eq', 'unavailable')
+             | list | count }}
+        attributes:
+          entities: >
+            {{ states
+               | rejectattr('domain', 'in', ['button', 'event', 'scene', 'update', 'input_button'])
+               | selectattr('state', 'eq', 'unavailable')
+               | map(attribute='entity_id') | list | join(', ') | truncate(250) }}

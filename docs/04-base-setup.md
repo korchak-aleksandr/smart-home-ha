@@ -220,7 +220,7 @@ sudo smartctl -A /dev/sda          # attributes
 
 Key attributes: `Reallocated_Sector_Ct` (should stay 0), `Wear_Leveling_Count` / `Percentage Used` (wear),
 `Temperature_Celsius`, `UDMA_CRC_Error_Count` (cable/connection errors). The `smartd` daemon is enabled on install
-and checks all disks periodically. Alerts from it are wired to Telegram in [08. Telegram bot](08-telegram-bot.md).
+and checks all disks periodically. Alerts from it are wired to Telegram in [09. Telegram bot](09-telegram-bot.md).
 
 USB flash drives usually don't support SMART. The backup drive is checked actively instead
 ([07. Backups](07-backups.md#health-checks-for-backup-jobs)).

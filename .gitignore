@@ -34,3 +34,10 @@ stack/homeassistant/
 
 # Live configs with real values (security settings, MACs, UUIDs). Local backup only, never pushed.
 private-configs/
+
+# Runtime data of monitoring services
+stack/victoriametrics/
+stack/grafana/
+# Downloaded community dashboards (fetched at deploy time, see scripts/fetch-grafana-dashboards.sh)
+stack/monitoring/grafana/dashboards/community/*.json
+stack/secrets/
