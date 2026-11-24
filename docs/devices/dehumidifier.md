@@ -14,7 +14,12 @@
   ([04, firewall](../04-base-setup.md#3-firewall-ufw)).
 - Tuya Local auto-picks a device description by matching data points. With white-label devices it can pick a
   similar but wrong one (e.g. temperature in °F instead of °C). Compare the entities with the device's display, and
-  if something is off, re-add the device and choose a better-matching description.
+  if something is off, re-add the device and choose another description on the **device type** screen. That screen
+  comes after the connection details, and it only lists descriptions whose data points fit the device.
+- After switching descriptions, Home Assistant may keep the old **display unit** of an entity (e.g. °F). Fix it in
+  the entity settings → *Unit of measurement*.
+- Long-pressing buttons on Tuya devices can **reset Wi-Fi**. The device then gets a new local key and must be
+  re-added in Tuya Local.
 - Reserve the device's IP on the router.
 
 ## What you get
@@ -25,4 +30,4 @@ monitor), notify when the tank is full.
 
 ## Examples
 
-- [LIFE Tuya Wi-Fi Dehumidifier 20L](../../devices/dehumidifier/life-tuya-20l/README.md): Tuya Local, local
+- [LIFE Tuya Wi-Fi Dehumidifier 20L](../../devices/dehumidifier/life-tuya-20l/README.md): Tuya Local, local (`eberg_rico_r12e2` description)

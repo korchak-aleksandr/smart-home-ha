@@ -67,7 +67,7 @@ examples — add your own model next to them without touching the generic docs.
 - [x] [Docker and Compose](docs/05-docker.md)
 - [x] [Home Assistant container](docs/06-home-assistant.md)
 - [ ] Backups and restore ([backup drive](docs/07-backups.md#1-backup-drive) done)
-- [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅ (type fix planned), [air quality monitor](docs/devices/air-quality.md) (planned)
+- [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅, [air quality monitor](docs/devices/air-quality.md) (planned)
 - [ ] Matter, Zigbee (radio stick, Matter Server, Mosquitto, Zigbee2MQTT)
 - [ ] Dashboards (built-in Sections + Mushroom)
 - [ ] Telegram bot: control, alerts, remote scenarios
