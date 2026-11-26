@@ -70,6 +70,7 @@ examples — add your own model next to them without touching the generic docs.
 - [x] [Monitoring: VictoriaMetrics, Grafana, exporters, energy cost estimate](docs/08-monitoring.md)
 - [x] [Backups: daily verified archives on the backup drive, 7 days, metrics](docs/07-backups.md)
 - [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅, [air quality monitor](docs/devices/air-quality.md) (planned)
+- [x] [Presence (who is home) without location data](docs/devices/presence.md)
 - [ ] Matter, Zigbee (radio stick, Matter Server, Mosquitto, Zigbee2MQTT)
 - [ ] Dashboards (built-in Sections + Mushroom)
 - [ ] Telegram bot: control, alerts, remote scenarios

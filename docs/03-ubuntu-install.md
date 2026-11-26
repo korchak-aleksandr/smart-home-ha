@@ -142,6 +142,10 @@ sudo systemctl restart avahi-daemon
   the same time of night usually come from the router (scheduled maintenance, automatic channel changes).
 - **Stale client cache** after an address change (e.g. Ethernet → Wi-Fi): wait ~2 minutes, or flush on macOS:
   `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`.
+- **VPN / proxy client on the client machine** (e.g. sing-box based apps in TUN/VPN mode): the server answers mDNS
+  queries (visible with `tcpdump` on the server), but the client never accepts the answer, so `.local` names fail only
+  while the app is on. Fix: enable the app's *bypass LAN* option, or use its system-proxy mode instead of TUN. Use the
+  IP address meanwhile.
 - **Router DNS:** many ISP routers don't register DHCP hostnames in their DNS, so a plain `homeserver` (without
   `.local`) won't resolve there. Check: `dig +short @<router-ip> homeserver`.
 
@@ -377,6 +381,10 @@ systemctl cat systemd-networkd-wait-online.service | grep ExecStart   # shows wh
 ```
 
 The route metric (Ethernet 100, Wi-Fi 600) makes traffic prefer the cable whenever both are connected.
+
+Harmless log line: `systemd-networkd-wait-online: Timeout occurred while waiting for network connectivity` around
+06:00–07:00. The daily apt jobs call `systemd-networkd-wait-online` themselves and wait for *all* managed links,
+including unplugged Ethernet ports, for 2 minutes. They then continue normally (updates still run).
 
 ## Done
 

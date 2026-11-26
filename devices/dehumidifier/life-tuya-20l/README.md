@@ -43,6 +43,7 @@ anyone on the LAN who knows it can control the device. Never commit it.
 | "Problem" sensor | Shows red while DP 19 = `32`. On this model `32` is the **filter cleaning reminder**: the app shows *"It's time to clean your Smart Dehumidifier"*. It's a real maintenance item, so it's left as a problem. |
 | Filter reminder reset | Not possible over the network: DP 20 ignores writes. Not done by holding Mode or Fan either. Holding Timer resets Wi-Fi (see above). How to reset it is still unknown (manual or LIFE support). The reminder doesn't affect operation. |
 | Tank full | **Not reported** over the network: DP 19 stays unchanged with a full or removed tank. Indirect sign: the device is on, but humidity keeps rising. |
+| Wi-Fi drop-outs | Once, the device fell off Wi-Fi completely: no ping, no Tuya broadcasts, HA *unavailable* for hours. It didn't reconnect by itself. **Unplugging it for ~10 s fixed it**, and it came back on the same (reserved) IP, which HA picked up automatically. Watch for it in Grafana: `hass_entity_available` of the humidifier entity. |
 | Mode selector | The description's mode names (`Continuities/Auto/Sleep`) don't match the device (`dehumidify`). Don't change the mode from HA. `dry_pury_evo_dehumidifier` has matching mode names (`dehumidify/drying/sleep`) but no timer. |
 
 ## Data points (live values from the device)

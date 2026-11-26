@@ -23,6 +23,13 @@ Each HA integration page shows an **IoT class** that tells you how HA talks to t
 Zigbee, Matter and Thread devices are local by design: they talk to the server's radio stick or the LAN, not to a
 vendor cloud.
 
+## Guides
+
+- [Presence: who is home](presence.md) (iPhones, no location data)
+- [Air quality monitors](air-quality.md)
+- [Dehumidifiers](dehumidifier.md)
+- [Robot vacuums](robot-vacuum.md)
+
 ## Adding a device to this repo
 
 See [AGENTS.md → Adding a device](../../AGENTS.md#adding-a-device).

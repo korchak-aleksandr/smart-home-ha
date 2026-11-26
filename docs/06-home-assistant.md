@@ -122,8 +122,10 @@ by IP:
 5. In the app: **Settings → Companion App → (server) → Internal URL** = `http://homeserver.local:8123`, and add your
    home Wi-Fi name under **Home network / SSIDs**. The app then knows it's at home and uses the local name.
 
-Optional during setup: **location** (presence for "arrived/left" automations; stays on your server) and
-**notifications** (pushed via Apple/Google, so they also arrive away from home). The app has no access away from home
+Optional during setup: **location** and **notifications**. Notifications are pushed via Apple/Google, so they also
+arrive away from home. Location sends **GPS coordinates** to the server: they're stored in history and backups. For
+home/away without coordinates, use [presence detection](devices/presence.md) and set the app's location access to
+*Never*. The app has no access away from home
 by design, see [0003](decisions/0003-remote-access-via-telegram-bot.md).
 
 If the app says *"no connection"* while at home, the cause is almost always name resolution. See
@@ -159,6 +161,7 @@ Home Assistant OS ships these as "apps" (add-ons). In a Container setup, each on
 | [Zigbee2MQTT](https://www.zigbee2mqtt.io/) | Zigbee devices through a USB coordinator stick | `koenkk/zigbee2mqtt` container, stick passed in as `/dev/serial/by-id/…` |
 | [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Dashboard cards (via Marketplace) | Start with HA's built-in **Sections** view and **Tile** cards. They share Mushroom's design language. Add Mushroom cards where the built-in ones fall short (chips, template cards). |
 | [Node-RED](https://nodered.org/) | Visual flow editor for complex automations | Optional, see [0004](decisions/0004-automations-in-home-assistant.md) |
+| [MCP Server](https://www.home-assistant.io/integrations/mcp_server/) (built in) | Lets AI clients (Claude, ...) read states and control devices through Assist | Optional. If used: a dedicated **non-admin** HA user and token, and expose to Assist only the needed entities (not persons or trackers: their states go to the AI provider). It can't change configuration. Avoid community MCP add-ons with admin access: they change HA outside git. |
 
 > One radio stick runs **either** Zigbee **or** Thread firmware, not both at once. Home Assistant deprecated the
 > multiprotocol firmware. For Zigbee devices *and* Matter-over-Thread devices, plan for two sticks.
