@@ -490,7 +490,7 @@
    "targets": [
     {
      "refId": "A",
-     "expr": "hass_sensor_temperature_celsius",
+     "expr": "hass_sensor_temperature_celsius{entity!~\"sensor.outdoor_.*\"}",
      "legendFormat": "{{friendly_name}}"
     }
    ],
@@ -675,6 +675,699 @@
       },
       "axisSoftMin": 0,
       "axisSoftMax": 1
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 15,
+   "type": "row",
+   "title": "Outdoor",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 30,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 16,
+   "type": "stat",
+   "title": "Air quality index",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 31,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_state{entity=\"sensor.outdoor_air_quality_index\"}",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 2
+       },
+       {
+        "color": "orange",
+        "value": 3
+       },
+       {
+        "color": "red",
+        "value": 4
+       }
+      ]
+     },
+     "decimals": 0,
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "1": {
+         "text": "1 low"
+        },
+        "2": {
+         "text": "2 moderate"
+        },
+        "3": {
+         "text": "3 high"
+        },
+        "4": {
+         "text": "4 very high"
+        }
+       }
+      }
+     ]
+    },
+    "overrides": []
+   },
+   "description": "Index of the nearest official station: 1 low, 2 moderate, 3 high, 4 very high."
+  },
+  {
+   "id": 17,
+   "type": "stat",
+   "title": "UV index now",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 31,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_state{entity=\"sensor.outdoor_uv_index\"}",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 3
+       },
+       {
+        "color": "orange",
+        "value": 6
+       },
+       {
+        "color": "red",
+        "value": 8
+       },
+       {
+        "color": "purple",
+        "value": 11
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 18,
+   "type": "stat",
+   "title": "UV index max today",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 31,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_state{entity=\"sensor.outdoor_uv_index_max_today\"}",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 3
+       },
+       {
+        "color": "orange",
+        "value": 6
+       },
+       {
+        "color": "red",
+        "value": 8
+       },
+       {
+        "color": "purple",
+        "value": 11
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 19,
+   "type": "stat",
+   "title": "Saharan dust",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 31,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_unit_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_saharan_dust\"}",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "con\u00b5gm3",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 50
+       },
+       {
+        "color": "red",
+        "value": 100
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Open-Meteo model (CAMS). Dust events push PM10 up across the island."
+  },
+  {
+   "id": 20,
+   "type": "stat",
+   "title": "Sea temperature",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 31,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_temperature_celsius{entity=\"sensor.outdoor_sea_temperature\"}",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 21,
+   "type": "stat",
+   "title": "Station data age",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 20,
+    "y": 31,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "time() - hass_last_updated_time_seconds{entity=\"sensor.outdoor_pm10\"}",
+     "instant": true,
+     "legendFormat": "__auto"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 10800
+       },
+       {
+        "color": "red",
+        "value": 21600
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Time since the station values last changed. The station reports hourly; hours without changes mean the station or the page is down."
+  },
+  {
+   "id": 22,
+   "type": "timeseries",
+   "title": "Particles (station) and Saharan dust (model)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 35,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_pm10_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_pm10\"}",
+     "legendFormat": "PM10"
+    },
+    {
+     "refId": "B",
+     "expr": "hass_sensor_pm25_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_pm2_5\"}",
+     "legendFormat": "PM2.5"
+    },
+    {
+     "refId": "C",
+     "expr": "hass_sensor_unit_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_saharan_dust\"}",
+     "legendFormat": "Saharan dust"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "con\u00b5gm3",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "description": "Official limits (1 low / 2 moderate / 3 high / 4 very high): PM10 50/100/200, PM2.5 25/50/100 \u03bcg/m\u00b3."
+  },
+  {
+   "id": 23,
+   "type": "timeseries",
+   "title": "Gases (station)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 35,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_ozone_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_ozone\"}",
+     "legendFormat": "O\u2083"
+    },
+    {
+     "refId": "B",
+     "expr": "hass_sensor_nitrogen_dioxide_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_no2\"}",
+     "legendFormat": "NO\u2082"
+    },
+    {
+     "refId": "C",
+     "expr": "hass_sensor_nitrogen_monoxide_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_no\"}",
+     "legendFormat": "NO"
+    },
+    {
+     "refId": "D",
+     "expr": "hass_sensor_unit_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_nox\"}",
+     "legendFormat": "NOx"
+    },
+    {
+     "refId": "E",
+     "expr": "hass_sensor_sulphur_dioxide_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_so2\"}",
+     "legendFormat": "SO\u2082"
+    },
+    {
+     "refId": "F",
+     "expr": "hass_sensor_unit_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_benzene\"}",
+     "legendFormat": "Benzene"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "con\u00b5gm3",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "description": "CO is on its own panel: its values are ~10x higher."
+  },
+  {
+   "id": 24,
+   "type": "timeseries",
+   "title": "UV index",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 43,
+    "w": 8,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_state{entity=\"sensor.outdoor_uv_index\"}",
+     "legendFormat": "now"
+    },
+    {
+     "refId": "B",
+     "expr": "hass_sensor_state{entity=\"sensor.outdoor_uv_index_max_today\"}",
+     "legendFormat": "max today"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 25,
+   "type": "timeseries",
+   "title": "Sea temperature",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 43,
+    "w": 8,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_temperature_celsius{entity=\"sensor.outdoor_sea_temperature\"}",
+     "legendFormat": "sea surface"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 26,
+   "type": "timeseries",
+   "title": "CO (station)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 43,
+    "w": 8,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_carbon_monoxide_u0xb5g_per_mu0xb3{entity=\"sensor.outdoor_co\"}",
+     "legendFormat": "CO"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "con\u00b5gm3",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
      },
      "decimals": 0
     },

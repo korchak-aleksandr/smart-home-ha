@@ -26,6 +26,7 @@ vendor cloud.
 ## Guides
 
 - [Presence: who is home](presence.md) (iPhones, no location data)
+- [Outdoor conditions](outdoor-conditions.md): air quality, UV, Saharan dust, sea temperature
 - [Air quality monitors](air-quality.md)
 - [Dehumidifiers](dehumidifier.md)
 - [Robot vacuums](robot-vacuum.md)

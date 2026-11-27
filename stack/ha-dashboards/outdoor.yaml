@@ -1,0 +1,55 @@
+# Details page for the outdoor sensors (stack/ha-packages/outdoor.yaml). Guide: docs/devices/outdoor-conditions.md
+# Install to: homeassistant/config/dashboards/outdoor.yaml. Registered in outdoor.yaml (lovelace → dashboards),
+# hidden from the sidebar; opened from a shortcut on the Home dashboard. Tap a tile for its history.
+title: Outdoor
+views:
+  - title: Outdoor
+    path: details
+    subview: true              # back arrow instead of the sidebar menu
+    back_path: /home
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Air quality
+            heading_style: title
+            icon: mdi:air-filter
+          - type: tile
+            entity: sensor.outdoor_air_quality_index
+            show_entity_picture: true
+            grid_options: {columns: 12}
+          - {type: tile, entity: sensor.outdoor_pm10}
+          - {type: tile, entity: sensor.outdoor_pm2_5}
+          - {type: tile, entity: sensor.outdoor_ozone}
+          - {type: tile, entity: sensor.outdoor_no2}
+          - {type: tile, entity: sensor.outdoor_so2}
+          - {type: tile, entity: sensor.outdoor_co}
+          - {type: tile, entity: sensor.outdoor_no}
+          - {type: tile, entity: sensor.outdoor_nox}
+          - {type: tile, entity: sensor.outdoor_benzene}
+          - {type: tile, entity: sensor.outdoor_saharan_dust}
+          - type: history-graph
+            hours_to_show: 48
+            grid_options: {columns: 12}
+            entities:
+              - sensor.outdoor_pm10
+              - sensor.outdoor_pm2_5
+              - sensor.outdoor_saharan_dust
+      - type: grid
+        cards:
+          - type: heading
+            heading: Sun and sea
+            heading_style: title
+            icon: mdi:weather-sunny
+          - {type: tile, entity: sensor.outdoor_uv_index}
+          - {type: tile, entity: sensor.outdoor_uv_index_max_today}
+          - type: tile
+            entity: sensor.outdoor_sea_temperature
+            grid_options: {columns: 12}
+          - type: history-graph
+            hours_to_show: 48
+            grid_options: {columns: 12}
+            entities:
+              - sensor.outdoor_uv_index

@@ -68,6 +68,9 @@ docs/                       # numbered step-by-step guides
 docs/devices/<class>.md     # generic guide per device class
 docs/decisions/NNNN-*.md    # architecture decision records; read before proposing structural changes
 stack/                      # docker-compose files, service configs, .env.example
+stack/ha-packages/          # Home Assistant YAML packages → homeassistant/config/packages/
+stack/ha-dashboards/        # HA YAML dashboards → homeassistant/config/dashboards/
+stack/ha-www/               # HA static files → homeassistant/config/www/ (served as /local/)
 configs/<component>/        # verified host config files (fail2ban, docker, netplan, ...), see configs/README.md
 devices/<class>/<model>/    # model-specific examples: README.md + configs
 scripts/                    # helper scripts (backups, maintenance)

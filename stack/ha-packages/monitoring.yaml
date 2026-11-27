@@ -17,3 +17,4 @@ prometheus:
       - sensor.*temperatur*              #   e.g. "..._temperature" or "..._temperatura")
       - humidifier.*                     # dehumidifiers: on/off, target humidity, mode
       - vacuum.*                         # robot vacuums: state
+      - sensor.outdoor_*                 # outdoor air quality, UV, dust, sea (ha-packages/outdoor.yaml)

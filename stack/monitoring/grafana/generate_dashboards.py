@@ -161,11 +161,48 @@ H += [ts("Entity availability", [('hass_entity_available', "{{friendly_name}}")]
       ts("HA process", [('rate(process_cpu_seconds_total{job="homeassistant"}[$__rate_interval])', "CPU (cores)"), ('process_resident_memory_bytes{job="homeassistant"} / 1e9', "memory (GB)")], 12, y)]
 y += 8
 H.append(row("Home", y)); y += 1
-H += [ts("Temperature", [("hass_sensor_temperature_celsius", "{{friendly_name}}")], 0, y, unit="celsius", decimals=1),
+H += [ts("Temperature", [('hass_sensor_temperature_celsius{entity!~"sensor.outdoor_.*"}', "{{friendly_name}}")], 0, y, unit="celsius", decimals=1),
       ts("Humidity", [("hass_sensor_humidity_percent", "{{friendly_name}}"), ("hass_humidifier_target_humidity_percent", "{{friendly_name}} target")], 12, y, unit="percent", decimals=0, soft_max=100)]
 y += 8
 H += [ts("Batteries", [("hass_sensor_battery_percent", "{{friendly_name}}")], 0, y, unit="percent", decimals=0, soft_max=100),
       ts("Dehumidifiers on/off", [("hass_humidifier_state", "{{friendly_name}}")], 12, y, decimals=0, soft_max=1)]
+y += 8
+H.append(row("Outdoor", y)); y += 1
+# Sensors from stack/ha-packages/outdoor.yaml: the nearest official air-quality station + Open-Meteo models.
+def out(metric, entity): return f'{metric}{{entity="sensor.outdoor_{entity}"}}'
+UG = "hass_sensor_unit_u0xb5g_per_mu0xb3"   # sensors in μg/m³ without a device class
+aqi = stat("Air quality index", out("hass_sensor_state", "air_quality_index"), 0, y, decimals=0, color_mode="background",
+           thresholds=th(GREEN, (2, "yellow"), (3, ORANGE), (4, RED)),
+           desc="Index of the nearest official station: 1 low, 2 moderate, 3 high, 4 very high.")
+aqi["fieldConfig"]["defaults"]["mappings"] = [{"type": "value", "options": {str(k): {"text": f"{k} {v}"} for k, v in
+                                               {1: "low", 2: "moderate", 3: "high", 4: "very high"}.items()}}]
+UV_TH = th(GREEN, (3, "yellow"), (6, ORANGE), (8, RED), (11, "purple"))
+H += [aqi,
+      stat("UV index now", out("hass_sensor_state", "uv_index"), 4, y, decimals=1, thresholds=UV_TH, color_mode="background"),
+      stat("UV index max today", out("hass_sensor_state", "uv_index_max_today"), 8, y, decimals=1, thresholds=UV_TH, color_mode="background"),
+      stat("Saharan dust", out(UG, "saharan_dust"), 12, y, unit="conµgm3", decimals=0, thresholds=th(GREEN, (50, ORANGE), (100, RED)),
+           desc="Open-Meteo model (CAMS). Dust events push PM10 up across the island."),
+      stat("Sea temperature", out("hass_sensor_temperature_celsius", "sea_temperature"), 16, y, unit="celsius", decimals=1),
+      stat("Station data age", f'time() - {out("hass_last_updated_time_seconds", "pm10")}', 20, y, unit="s", decimals=0,
+           thresholds=th(GREEN, (3 * 3600, ORANGE), (6 * 3600, RED)),
+           desc="Time since the station values last changed. The station reports hourly; hours without changes mean the station or the page is down.")]
+y += 4
+H += [ts("Particles (station) and Saharan dust (model)", [(out("hass_sensor_pm10_u0xb5g_per_mu0xb3", "pm10"), "PM10"),
+                                                          (out("hass_sensor_pm25_u0xb5g_per_mu0xb3", "pm2_5"), "PM2.5"),
+                                                          (out(UG, "saharan_dust"), "Saharan dust")], 0, y, unit="conµgm3", decimals=1,
+         desc="Official limits (1 low / 2 moderate / 3 high / 4 very high): PM10 50/100/200, PM2.5 25/50/100 μg/m³."),
+      ts("Gases (station)", [(out("hass_sensor_ozone_u0xb5g_per_mu0xb3", "ozone"), "O₃"),
+                             (out("hass_sensor_nitrogen_dioxide_u0xb5g_per_mu0xb3", "no2"), "NO₂"),
+                             (out("hass_sensor_nitrogen_monoxide_u0xb5g_per_mu0xb3", "no"), "NO"),
+                             (out(UG, "nox"), "NOx"),
+                             (out("hass_sensor_sulphur_dioxide_u0xb5g_per_mu0xb3", "so2"), "SO₂"),
+                             (out(UG, "benzene"), "Benzene")], 12, y, unit="conµgm3", decimals=1,
+         desc="CO is on its own panel: its values are ~10x higher.")]
+y += 8
+H += [ts("UV index", [(out("hass_sensor_state", "uv_index"), "now"), (out("hass_sensor_state", "uv_index_max_today"), "max today")], 0, y, decimals=1),
+      ts("Sea temperature", [(out("hass_sensor_temperature_celsius", "sea_temperature"), "sea surface")], 8, y, w=8, unit="celsius", decimals=1),
+      ts("CO (station)", [(out("hass_sensor_carbon_monoxide_u0xb5g_per_mu0xb3", "co"), "CO")], 16, y, w=8, unit="conµgm3", decimals=0)]
+H[-3]["gridPos"]["w"] = 8
 y += 8
 json.dump(dashboard("home-assistant", "Home Assistant", H, desc="HA health (unavailable entities, updates, resources) and allow-listed home sensors."),
           open(f"{OUT}/home-assistant.json", "w"), indent=1)

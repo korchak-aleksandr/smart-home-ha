@@ -1,0 +1,130 @@
+# Outdoor conditions: the nearest official air-quality station + Open-Meteo models (sea, UV, Saharan dust).
+# Guide: docs/devices/outdoor-conditions.md
+#
+# Needs in homeassistant/config/secrets.yaml (keeps your location out of git):
+#   air_quality_station_url: https://www.airquality.dli.mlsi.gov.cy/node/1066   # example: Nicosia - Traffic Station
+# Open-Meteo gets the home coordinates from Settings → System → General, rounded to ~1 km.
+# Pictures for the index: stack/ha-www/air-quality/*.svg → homeassistant/config/www/air-quality/
+# Details page: stack/ha-dashboards/outdoor.yaml → homeassistant/config/dashboards/outdoor.yaml
+
+# Cyprus air-quality network (Department of Labour Inspection). One station page, measured values, hourly.
+# No API: the integration reads numbers from the page's HTML (the `content` attribute holds the plain number).
+scrape:
+  - resource: !secret air_quality_station_url
+    scan_interval: 3600                  # the station publishes hourly values
+    sensor:
+      # Index of the station: 1 low, 2 moderate, 3 high, 4 very high (the colored circle in the official app).
+      - name: Outdoor air quality index
+        unique_id: outdoor_air_quality_index
+        select: ".field--name-field-station-status .field--item"
+        value_template: "{{ value | int(0) }}"
+        availability: "{{ value | int(0) in [1, 2, 3, 4] }}"
+        picture: "/local/air-quality/{{ value | int(0) }}.svg"
+        state_class: measurement
+      - name: Outdoor PM10
+        unique_id: outdoor_pm10
+        select: ".field--name-field-pollutant-5 .field--item"
+        attribute: content
+        device_class: pm10
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor PM2.5
+        unique_id: outdoor_pm2_5
+        select: ".field--name-field-pollutant-6001 .field--item"
+        attribute: content
+        device_class: pm25
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor ozone
+        unique_id: outdoor_ozone
+        select: ".field--name-field-pollutant-7 .field--item"
+        attribute: content
+        device_class: ozone
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor NO2
+        unique_id: outdoor_no2
+        select: ".field--name-field-pollutant-8 .field--item"
+        attribute: content
+        device_class: nitrogen_dioxide
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor NO
+        unique_id: outdoor_no
+        select: ".field--name-field-pollutant-38 .field--item"
+        attribute: content
+        device_class: nitrogen_monoxide
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor NOx
+        unique_id: outdoor_nox
+        select: ".field--name-field-pollutant-9 .field--item"
+        attribute: content
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+        icon: mdi:molecule
+      - name: Outdoor SO2
+        unique_id: outdoor_so2
+        select: ".field--name-field-pollutant-1 .field--item"
+        attribute: content
+        device_class: sulphur_dioxide
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor CO
+        unique_id: outdoor_co
+        select: ".field--name-field-pollutant-10 .field--item"
+        attribute: content
+        device_class: carbon_monoxide
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+      - name: Outdoor benzene
+        unique_id: outdoor_benzene
+        select: ".field--name-field-pollutant-20 .field--item"
+        attribute: content
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+        icon: mdi:molecule
+
+# Open-Meteo (free, no key, non-commercial use). Model data, not measurements.
+rest:
+  - resource_template: >-
+      https://air-quality-api.open-meteo.com/v1/air-quality?latitude={{ state_attr('zone.home', 'latitude') | round(2) }}&longitude={{ state_attr('zone.home', 'longitude') | round(2) }}&current=uv_index,dust&daily=uv_index_max&forecast_days=1&timezone=auto
+    scan_interval: 1800
+    sensor:
+      - name: Outdoor UV index
+        unique_id: outdoor_uv_index
+        value_template: "{{ value_json.current.uv_index }}"
+        state_class: measurement
+        icon: mdi:weather-sunny-alert
+      - name: Outdoor UV index max today
+        unique_id: outdoor_uv_index_max_today
+        value_template: "{{ value_json.daily.uv_index_max[0] }}"
+        icon: mdi:weather-sunny-alert
+      - name: Outdoor Saharan dust
+        unique_id: outdoor_saharan_dust
+        value_template: "{{ value_json.current.dust }}"
+        unit_of_measurement: "μg/m³"
+        state_class: measurement
+        icon: mdi:weather-dust
+  - resource_template: >-
+      https://marine-api.open-meteo.com/v1/marine?latitude={{ state_attr('zone.home', 'latitude') | round(2) }}&longitude={{ state_attr('zone.home', 'longitude') | round(2) }}&current=sea_surface_temperature
+    scan_interval: 1800
+    sensor:
+      - name: Outdoor sea temperature
+        unique_id: outdoor_sea_temperature
+        value_template: "{{ value_json.current.sea_surface_temperature }}"
+        device_class: temperature
+        unit_of_measurement: "°C"
+        state_class: measurement
+        icon: mdi:waves
+
+# Details page, hidden from the sidebar; the Home dashboard links to it with a shortcut (/outdoor-conditions/details).
+lovelace:
+  dashboards:
+    outdoor-conditions:
+      mode: yaml
+      filename: dashboards/outdoor.yaml
+      title: Outdoor
+      icon: mdi:tree
+      show_in_sidebar: false
+      require_admin: false
