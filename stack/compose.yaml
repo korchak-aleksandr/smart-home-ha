@@ -29,6 +29,17 @@ services:
       - apparmor:unconfined
     restart: unless-stopped
 
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto:2.0.23
+    # MQTT broker for Wi-Fi devices with private MQTT (and Zigbee2MQTT later). Host network, so ufw applies:
+    # port 1883 is open to the LAN only (docs/06-home-assistant.md#9-mqtt-broker-mosquitto).
+    network_mode: host
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro   # mosquitto.conf + acl from git, passwd created on the server
+      - ./mosquitto/data:/mosquitto/data          # persistence (retained messages)
+    restart: unless-stopped
+
   # ---------------------------------------------------------------------------------------------------------------
   # Monitoring (docs/08-monitoring.md, docs/decisions/0005-monitoring.md).
   # Every service runs on the host network and listens on 127.0.0.1 only, except Grafana (LAN, via ufw).

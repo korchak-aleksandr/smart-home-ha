@@ -165,6 +165,7 @@ Example drive: [SanDisk Cruzer Fit 16 GB](../devices/usb-storage/sandisk-cruzer-
 | Home Assistant history DB, as a **consistent snapshot** (`sqlite3 .backup`, the SQLite online backup API: HA keeps running and writing) | `…/home-assistant_v2.db` |
 | Stack: compose file, `.env`, `secrets/`, monitoring config | `/opt/smart-home` |
 | Grafana's own DB (users, preferences; dashboards are in git anyway) | `/opt/smart-home/grafana/grafana.db` |
+| Mosquitto: password file, plaintext credentials (devices store them), retained messages | `/opt/smart-home/mosquitto` |
 | Host configs: netplan (incl. Wi-Fi), ufw, fail2ban, SSH server drop-ins, sudoers, Docker, systemd units, fstab, avahi, sysctl, udev, apt sources | `/etc/...` |
 
 | Not included | Why |

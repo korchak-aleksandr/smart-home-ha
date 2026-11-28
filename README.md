@@ -75,7 +75,8 @@ examples — add your own model next to them without touching the generic docs.
 - [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅, [air quality monitor](docs/devices/air-quality.md) (planned)
 - [x] [Presence (who is home) without location data](docs/devices/presence.md)
 - [x] [Outdoor conditions: official air-quality station, UV, Saharan dust, sea temperature](docs/devices/outdoor-conditions.md)
-- [ ] Matter, Zigbee (radio stick, Matter Server, Mosquitto, Zigbee2MQTT)
+- [ ] Matter, Zigbee (radio stick, Matter Server, Zigbee2MQTT)
+- [x] [MQTT broker (Mosquitto)](docs/06-home-assistant.md#9-mqtt-broker-mosquitto)
 - [ ] Dashboards (built-in Sections + Mushroom)
 - [ ] Telegram bot: control, alerts, remote scenarios
 - [ ] Device classes and model examples

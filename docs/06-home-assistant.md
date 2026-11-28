@@ -157,7 +157,6 @@ Home Assistant OS ships these as "apps" (add-ons). In a Container setup, each on
 |-----------|---------|---------------|
 | **Marketplace** (formerly [HACS](https://hacs.xyz/)) | Community store for custom integrations and dashboard cards (catalog: `hacs/default`) | **Built into Home Assistant** (2026.11 has it) and enabled automatically: sidebar → *Marketplace*, or `/marketplace`. Don't install the old HACS custom integration: HA removes it at startup as legacy. |
 | [Matter Server](https://github.com/home-assistant-libs/python-matter-server) | Matter devices (over Wi-Fi/Ethernet and over Thread) | Container with `network_mode: host` (Matter needs IPv6 on the LAN). **Matter over Thread** additionally needs a Thread border router: an OpenThread Border Router container plus a radio stick with Thread firmware. |
-| [Mosquitto](https://mosquitto.org/) | MQTT broker: the message bus between Zigbee2MQTT and HA | `eclipse-mosquitto` container, not exposed beyond what Zigbee2MQTT and HA need |
 | [Zigbee2MQTT](https://www.zigbee2mqtt.io/) | Zigbee devices through a USB coordinator stick | `koenkk/zigbee2mqtt` container, stick passed in as `/dev/serial/by-id/…` |
 | [Mushroom](https://github.com/piitaya/lovelace-mushroom) | Dashboard cards (via Marketplace) | Start with HA's built-in **Sections** view and **Tile** cards. They share Mushroom's design language. Add Mushroom cards where the built-in ones fall short (chips, template cards). |
 | [Node-RED](https://nodered.org/) | Visual flow editor for complex automations | Optional, see [0004](decisions/0004-automations-in-home-assistant.md) |
@@ -180,6 +179,75 @@ names or private IPs. Two options for a server that isn't reachable from the int
    or [step-ca](https://smallstep.com/docs/step-ca/)). Issues certificates for any name, including `homeserver.local`,
    but its root certificate must be installed once on every client device.
 
+## 9. MQTT broker (Mosquitto)
+
+[Mosquitto](https://mosquitto.org/) is the message bus for devices that talk MQTT: Wi-Fi devices with a "private
+MQTT" option (e.g. [Qingping air monitors](../devices/air-quality/qingping-cgs2/README.md)), and Zigbee2MQTT later.
+Devices publish to the broker, Home Assistant subscribes to it.
+
+| File | Where | In git |
+|------|-------|--------|
+| `stack/mosquitto/config/mosquitto.conf` | `/opt/smart-home/mosquitto/config/` | yes: one plain-MQTT listener on 1883, no anonymous access, persistence, logs to `docker logs` |
+| `stack/mosquitto/config/acl` | same | yes: which user may use which topics |
+| `passwd` (hashed passwords) | same | **no**, created on the server |
+| `credentials/<user>` (plaintext passwords, mode 600) | `/opt/smart-home/mosquitto/credentials/` | **no**. Kept because some devices store the password and can only be reconfigured by a factory reset. Backed up with the stack. |
+
+**Users:** one per client type, each limited by the ACL: `homeassistant` (all topics), `qingping` (`qingping/#`
+only). A device that leaks its password can then only publish its own data.
+
+**No TLS:** plain MQTT is acceptable inside the home network, and some devices reject self-signed certificates. The
+container runs on the host network, so ufw applies: port 1883 is open to the LAN only, never forward it on the router.
+
+### Deploy
+
+1. Copy the config, create a password per user and the password file (the commands print no passwords):
+   ```bash
+   rsync -a stack/compose.yaml homeserver:/opt/smart-home/
+   rsync -a stack/mosquitto homeserver:/opt/smart-home/
+   ssh homeserver 'cd /opt/smart-home && mkdir -p mosquitto/data mosquitto/credentials && chmod 700 mosquitto/credentials
+     for u in homeassistant qingping; do [ -s mosquitto/credentials/$u ] || (umask 077; openssl rand -hex 16 > mosquitto/credentials/$u); done
+     sudo touch mosquitto/config/passwd
+     for u in homeassistant qingping; do
+       docker run --rm -v "$PWD/mosquitto/config:/m" eclipse-mosquitto:2.0.23 mosquitto_passwd -b /m/passwd $u "$(cat mosquitto/credentials/$u)"
+     done
+     sudo chown -R 1883:1883 mosquitto/config mosquitto/data && sudo chmod 700 mosquitto/config/passwd mosquitto/config/acl'
+   ```
+   `openssl rand -hex 16` makes a random 32-character password. `mosquitto_passwd` stores only its hash. The
+   container runs as user 1883 (`mosquitto`), which must own `passwd` and `acl`. Mosquitto warns about (and future
+   versions refuse) files that others can read.
+2. Open the port to the LAN and start the broker (`sudo`):
+   ```bash
+   ssh homeserver 'sudo ufw allow from 192.168.0.0/16 to any port 1883 proto tcp comment "MQTT (Mosquitto) from LAN"
+     cd /opt/smart-home && docker compose up -d mosquitto && docker logs mosquitto'
+   ```
+   `chown: /mosquitto/config: Read-only file system` in the log is harmless: the image's entrypoint tries to take
+   ownership of the read-only config mount.
+3. Test: a message from `qingping` arrives, a topic outside its ACL is dropped, a wrong password is refused:
+   ```bash
+   ssh homeserver 'cd /opt/smart-home; HA=$(cat mosquitto/credentials/homeassistant); QP=$(cat mosquitto/credentials/qingping)
+     docker exec mosquitto mosquitto_sub -h 127.0.0.1 -u homeassistant -P "$HA" -t "#" -v -W 4 &
+     sleep 1
+     docker exec mosquitto mosquitto_pub -h 127.0.0.1 -u qingping -P "$QP" -t qingping/TEST/up -m allowed
+     docker exec mosquitto mosquitto_pub -h 127.0.0.1 -u qingping -P "$QP" -t other/topic -m dropped
+     docker exec mosquitto mosquitto_pub -h 127.0.0.1 -u qingping -P wrong -t qingping/TEST/up -m refused; wait'
+   ```
+   Expected: only `qingping/TEST/up allowed` is printed, and the last command reports *not authorised*.
+
+### Connect Home Assistant
+
+*Settings → Devices & services → Add integration → MQTT*: broker `127.0.0.1`, port `1883`, username
+`homeassistant`, and the password. Read it **in your own terminal**, don't paste it into chats or tickets:
+`ssh homeserver cat /opt/smart-home/mosquitto/credentials/homeassistant`.
+
+### Changes later
+
+- **Config or ACL:** edit in git, copy with `sudo install -o 1883 -g 1883 -m 700` (ACL) or `-m 644` (config) into
+  `mosquitto/config/`, then `docker compose restart mosquitto`. A plain `rsync` as your user would leave files the
+  container can't read.
+- **New client type** (e.g. Zigbee2MQTT): add a `user` block to `acl`, add the user to the password loop above, and
+  restart the container.
+- **Never change a password that a device has stored** (e.g. Qingping): that device then needs a factory reset.
+
 ## Useful commands
 
 ```bash
@@ -187,5 +255,6 @@ cd /opt/smart-home
 docker compose ps                              # status
 docker compose logs --tail 100 homeassistant   # recent logs
 docker compose restart homeassistant           # restart HA
+docker logs --tail 50 mosquitto               # MQTT broker: connections, auth errors
 docker compose logs --since 10m homeassistant | grep -E 'ERROR|WARNING'   # recent problems
 ```

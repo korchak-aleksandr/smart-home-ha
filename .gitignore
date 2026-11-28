@@ -41,3 +41,8 @@ stack/grafana/
 # Downloaded community dashboards (fetched at deploy time, see scripts/fetch-grafana-dashboards.sh)
 stack/monitoring/grafana/dashboards/community/*.json
 stack/secrets/
+
+# Mosquitto: password file, runtime data and the plaintext credentials kept on the server
+stack/mosquitto/config/passwd
+stack/mosquitto/data/
+stack/mosquitto/credentials/

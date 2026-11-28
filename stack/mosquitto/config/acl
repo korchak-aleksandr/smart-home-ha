@@ -1,0 +1,9 @@
+# Who may use which topics. One MQTT user per client type, each limited to its own topics.
+
+# Home Assistant: everything (MQTT discovery, integrations, device commands).
+user homeassistant
+topic readwrite #
+
+# Qingping air monitors (private MQTT): publish to qingping/<mac>/up, receive commands on qingping/<mac>/down.
+user qingping
+topic readwrite qingping/#
