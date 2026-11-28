@@ -284,7 +284,9 @@ sudo systemctl daemon-reload && sudo systemctl enable --now cpu-energy-preferenc
 cat /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference      # expected: balance_power
 ```
 
-3. cAdvisor collects every 30 s instead of 15 s (`--housekeeping_interval=30s`), so it wakes the system half as often.
+3. cAdvisor collects every 45 s instead of 15 s (`--housekeeping_interval=45s`, scraped at the same interval), so it
+   wakes the system a third as often. It's still the busiest exporter: ~0.04 CPU cores at 30 s, more than Home
+   Assistant itself.
 
 These are small gains (fractions of a watt). Wi-Fi power saving stays **off** on purpose
 ([03, Wi-Fi power saving](03-ubuntu-install.md#turn-off-wi-fi-power-saving)).

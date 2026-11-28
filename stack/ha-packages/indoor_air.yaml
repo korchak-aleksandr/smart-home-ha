@@ -10,8 +10,8 @@
 
 template:
   - triggers:
-      - trigger: time_pattern     # monitors report every few minutes; once a minute is enough
-        minutes: "/1"
+      - trigger: time_pattern     # a summary: every 5 minutes is enough, even if monitors report every minute
+        minutes: "/5"
       - trigger: homeassistant
         event: start
     variables:

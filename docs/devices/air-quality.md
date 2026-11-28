@@ -44,7 +44,7 @@ Noise and humidity aren't part of it: they're comfort, not pollution.
 - It finds its inputs by device class (`pm25`, `pm10`, `carbon_dioxide`) and by name (`*voc*`), so it has no
   entity IDs in it and picks up new monitors by itself. With several monitors, the worst room counts.
 - Outdoor sensors are skipped by their object ID prefix `outdoor_`: keep that prefix for anything measured outside.
-- It updates once a minute. The attribute `worst` names the pollutants that set the index (entity → *Attributes*).
+- It updates every 5 minutes: it's a summary, the raw readings (e.g. CO₂ every minute) are on their own tiles. The attribute `worst` names the pollutants that set the index (entity → *Attributes*).
 - It's not exported to the metrics on purpose: Grafana shows the raw readings ([decision](../08-monitoring.md#3-home-assistant-metrics)).
 - The package file name must be a slug: `indoor_air.yaml`, not `indoor-air.yaml` (HA refuses the package).
 

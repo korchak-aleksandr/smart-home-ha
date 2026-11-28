@@ -77,8 +77,10 @@ Qingping's cloud. The cloud is used once, to push the broker settings to the dev
    model **CGS2**, a name, an area. The device doesn't show up under *Discovered*: discovery runs only inside this
    dialog. If it isn't found, add it manually with the MAC (no colons) while data is flowing.
 
-After that, the integration keeps the device in real-time mode itself and updates every 5 minutes
-(`number.<name>_update_interval`).
+After that, the integration keeps the device in real-time mode itself. It reports every 5 minutes by default; set
+`number.<name>_update_interval` (5–300 s) to **60 s** for a responsive CO₂ reading. The new interval applies within a
+minute (the device acknowledges it on the down topic). On the charger this costs nothing noticeable: ~10 more
+database rows per minute for HA.
 
 ## What you get
 

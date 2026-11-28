@@ -10,7 +10,7 @@ the rules: [0005. Monitoring](decisions/0005-monitoring.md).
  HA /api/prometheus ─┤  allow-listed HA entities (health, updates, batteries, climate)
  VM, Grafana        ─┤  their own /metrics
                      ▼
-        VictoriaMetrics (scrapes every 30 s, keeps 1 year)  ── 127.0.0.1:8428
+        VictoriaMetrics (scrapes every 30 s, cAdvisor 45 s, SMART 60 s, keeps 2 years)  ── 127.0.0.1:8428
                      ▼
         Grafana  ── http://homeserver.local:3000  (LAN, view without login)
 ```
@@ -146,6 +146,27 @@ out at roughly **6.7 W, ~60 kWh and ~€20 per year**.
 **Price** = the *marginal* price per kWh from your bill (the server doesn't change fixed charges). Example for Cyprus
 EAC tariff 01 (Domestic): generation €0.1789 + network €0.0393 + fuel adjustment (changes every bill, e.g. €0.0973)
 + PSO €0.00051, × 1.05 VAT, + RES fund €0.005 ≈ **€0.337/kWh**.
+
+### Storage and SSD writes
+
+VictoriaMetrics compresses everything (built in, always on): ~0.14 bytes per sample here, ~17 MB after 5 days, ~1 GB
+per year, so retention is **2 years** (`-retentionPeriod=2y`). Its disk writes are much larger than the data: it saves
+fresh samples in small parts and merges them into bigger ones in the background, rewriting the same data several
+times. `-inmemoryDataFlushInterval=30s` (default 5 s) makes fewer, larger parts and so fewer merges. On an unclean
+power loss up to 30 s of metrics are lost; a normal restart loses nothing.
+
+Measured on the reference server (SSD, all writes per day):
+
+| Writer | Per day |
+|--------|---------|
+| systemd-journald (the journal rewrites its index pages on every flush, even with few log lines) | most of the ~6.6 GB |
+| VictoriaMetrics, flush every 5 s | ~1.2 GB |
+| Home Assistant | ~0.3 GB |
+| Grafana | ~0.16 GB |
+
+~6.6 GB a day is ~2.4 TB a year. A 512 GB SSD is typically rated for 150–300 TB written, so this is decades of
+headroom. Find the writers yourself: per cgroup with `/sys/fs/cgroup/**/io.stat` (`wbytes`, it includes short-lived
+processes and writeback), per container in Grafana (*Docker monitoring*).
 
 ## 5. Gotchas found during setup
 

@@ -12,8 +12,9 @@ estimate of the server's electricity cost.
 ## Decision
 
 - **Storage and scraping:** single-node [VictoriaMetrics](https://docs.victoriametrics.com/). It scrapes targets
-  itself (Prometheus-compatible config), so no separate Prometheus or vmagent is needed. Retention is **1 year**.
-  It's light on RAM and disk.
+  itself (Prometheus-compatible config), so no separate Prometheus or vmagent is needed. Retention is **2 years**.
+  It's light on RAM and disk: ~0.14 bytes per sample after compression (built in, always on), ~1 GB per year for
+  this setup. In-memory data is flushed every 30 s instead of 5 s, which cuts the background merges and SSD writes.
 - **Dashboards:** [Grafana](https://grafana.com/), **anonymous read-only access inside the home network**. Viewers may
   use Explore. Changes need the admin login.
 - **Exporters:** node_exporter (host, Wi-Fi, temperatures, RAPL energy), smartctl_exporter (SSD), cAdvisor

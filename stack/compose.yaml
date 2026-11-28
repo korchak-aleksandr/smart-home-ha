@@ -53,7 +53,9 @@ services:
     command:
       - -httpListenAddr=127.0.0.1:8428                    # API + vmui, local only (use Grafana Explore instead)
       - -storageDataPath=/storage
-      - -retentionPeriod=1y
+      - -retentionPeriod=2y                               # ~1 GB per year at the current volume (0.14 bytes per sample)
+      - -inmemoryDataFlushInterval=30s                    # flush to disk every 30 s instead of 5 s: fewer small parts and
+                                                          # merges, less SSD wear; an unclean power loss loses up to 30 s
       - -promscrape.config=/etc/monitoring/scrape.yaml
       - -promscrape.configCheckInterval=30s               # pick up scrape.yaml changes without a restart
     volumes:
@@ -118,7 +120,7 @@ services:
       - --listen_ip=127.0.0.1
       - --port=8081
       - --docker_only=true                                # only containers, not every systemd slice
-      - --housekeeping_interval=30s                     # = scrape interval; fewer wakeups
+      - --housekeeping_interval=45s                     # = its scrape interval (monitoring/scrape.yaml); fewer wakeups
       - --store_container_labels=false
       - --whitelisted_container_labels=com.docker.compose.service
       # Keep cardinality low: per-CPU, per-process and network-protocol details aren't needed.
