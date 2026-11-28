@@ -18,3 +18,8 @@ prometheus:
       - humidifier.*                     # dehumidifiers: on/off, target humidity, mode
       - vacuum.*                         # robot vacuums: state
       - sensor.outdoor_*                 # outdoor air quality, UV, dust, sea (ha-packages/outdoor.yaml)
+      - sensor.*co2                      # indoor air monitors (e.g. Qingping): CO2, particles, VOC, noise
+      - sensor.*pm25
+      - sensor.*pm10
+      - sensor.*etvoc
+      - sensor.*noise

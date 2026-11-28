@@ -92,7 +92,7 @@ needs a restart after `rsync`.
      'sudo install -D -m 644 /tmp/monitoring.yaml /opt/smart-home/homeassistant/config/packages/monitoring.yaml && cd /opt/smart-home && docker compose restart homeassistant'
    ```
    It enables HA's [Prometheus integration](https://www.home-assistant.io/integrations/prometheus/) with an
-   **allow-list**: updates, batteries, humidity/temperature sensors, dehumidifiers, vacuums, outdoor sensors
+   **allow-list**: updates, batteries, humidity/temperature sensors, dehumidifiers, vacuums, indoor air monitors (CO₂, particles, VOC, noise), outdoor sensors
    ([outdoor conditions](devices/outdoor-conditions.md)). Only what HA exports
    natively goes to Grafana: entity states and availability (`hass_entity_available`), plus HA's process metrics.
    Nothing is computed or added on the HA side. Everything else (e.g. attributes that aren't exported) is viewed in HA
@@ -118,7 +118,7 @@ needs a restart after `rsync`.
 |--------|-----------|--------|
 | Home server | **Server overview** (home page): now-values, host, temperatures, Wi-Fi, containers | this repo |
 | Home server | **Energy & cost**: power, kWh and € for the selected range, projections per month and year | this repo |
-| Home server | **Home Assistant**: HA up, unavailable exported entities, pending updates, HA CPU/memory, temperature, humidity, batteries; **Outdoor**: air-quality index, UV, dust, sea, pollutants, station data age | this repo |
+| Home server | **Home Assistant**: HA up, unavailable exported entities, pending updates, HA CPU/memory, temperature, humidity, batteries; **Indoor air**: CO₂, particles, VOC, noise, monitor data age; **Outdoor**: air-quality index, UV, dust, sea, pollutants, station data age | this repo |
 | Community | Node Exporter Full (1860) | grafana.com, pinned revision |
 | Community | Docker monitoring (15798) | grafana.com, pinned revision |
 | Community | SMARTctl Exporter Dashboard (22604) | grafana.com, pinned revision |

@@ -167,6 +167,29 @@ y += 8
 H += [ts("Batteries", [("hass_sensor_battery_percent", "{{friendly_name}}")], 0, y, unit="percent", decimals=0, soft_max=100),
       ts("Dehumidifiers on/off", [("hass_humidifier_state", "{{friendly_name}}")], 12, y, decimals=0, soft_max=1)]
 y += 8
+H.append(row("Indoor air", y)); y += 1
+# Indoor air monitors (e.g. Qingping CGS2 over private MQTT). Metric names follow HA's device class and unit.
+CO2 = "hass_sensor_carbon_dioxide_ppm"
+CO2_TH = th(GREEN, (1000, "yellow"), (1500, ORANGE), (2000, RED))   # same bounds as the indoor index (stack/ha-packages/indoor_air.yaml)
+NOT_OUT = 'entity!~"sensor.outdoor_.*"'
+H += [stat("CO₂ now", CO2, 0, y, w=6, unit="ppm", decimals=0, thresholds=CO2_TH, color_mode="background", legend="{{friendly_name}}",
+           desc="Below 1000 ppm fine, 1000-1500 ventilate, 1500-2000 stuffy, from 2000 bad (German Environment Agency: above 2000 unacceptable)."),
+      stat("PM2.5 indoors now", f"hass_sensor_pm25_u0xb5g_per_mu0xb3{{{NOT_OUT}}}", 6, y, w=6, unit="conµgm3", decimals=0,
+           thresholds=th(GREEN, (15, "yellow"), (25, ORANGE), (50, RED)), color_mode="background", legend="{{friendly_name}}",
+           desc="WHO 24-hour guideline: 15 μg/m³."),
+      stat("Noise now", "hass_sensor_sound_pressure_db", 12, y, w=6, unit="dB", decimals=0, legend="{{friendly_name}}"),
+      stat("Monitor data age", f"time() - max by (friendly_name) ({{__name__=\"hass_last_updated_time_seconds\", entity=~\"sensor.*_co2\"}})",
+           18, y, w=6, unit="s", decimals=0, thresholds=th(GREEN, (900, ORANGE), (3600, RED)), legend="{{friendly_name}}",
+           desc="Time since the CO₂ value last changed. The monitor reports every few minutes; long gaps mean it lost Wi-Fi or the MQTT broker.")]
+y += 4
+H += [ts("CO₂", [(CO2, "{{friendly_name}}")], 0, y, unit="ppm", decimals=0, desc="Below 1000 ppm fine, 1000-1500 ventilate, 1500-2000 stuffy, from 2000 bad."),
+      ts("Particles indoors", [(f"hass_sensor_pm25_u0xb5g_per_mu0xb3{{{NOT_OUT}}}", "{{friendly_name}}"),
+                               (f"hass_sensor_pm10_u0xb5g_per_mu0xb3{{{NOT_OUT}}}", "{{friendly_name}}")], 12, y, unit="conµgm3", decimals=0)]
+y += 8
+H += [ts("VOC index", [('hass_sensor_aqi_None{entity=~"sensor.*etvoc"}', "{{friendly_name}}")], 0, y, decimals=0,
+         desc="Sensirion VOC index: 100 = the room's usual level, above 100 worse than usual, up to 500."),
+      ts("Noise", [("hass_sensor_sound_pressure_db", "{{friendly_name}}")], 12, y, unit="dB", decimals=0)]
+y += 8
 H.append(row("Outdoor", y)); y += 1
 # Sensors from stack/ha-packages/outdoor.yaml: the nearest official air-quality station + Open-Meteo models.
 def out(metric, entity): return f'{metric}{{entity="sensor.outdoor_{entity}"}}'
@@ -204,6 +227,6 @@ H += [ts("UV index", [(out("hass_sensor_state", "uv_index"), "now"), (out("hass_
       ts("CO (station)", [(out("hass_sensor_carbon_monoxide_u0xb5g_per_mu0xb3", "co"), "CO")], 16, y, w=8, unit="conµgm3", decimals=0)]
 H[-3]["gridPos"]["w"] = 8
 y += 8
-json.dump(dashboard("home-assistant", "Home Assistant", H, desc="HA health (unavailable entities, updates, resources) and allow-listed home sensors."),
+json.dump(dashboard("home-assistant", "Home Assistant", H, desc="HA health (unavailable entities, updates, resources), allow-listed home sensors, indoor and outdoor air."),
           open(f"{OUT}/home-assistant.json", "w"), indent=1)
 print("ok")

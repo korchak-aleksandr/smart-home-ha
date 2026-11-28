@@ -1,7 +1,7 @@
 {
  "uid": "home-assistant",
  "title": "Home Assistant",
- "description": "HA health (unavailable entities, updates, resources) and allow-listed home sensors.",
+ "description": "HA health (unavailable entities, updates, resources), allow-listed home sensors, indoor and outdoor air.",
  "tags": [
   "home-server"
  ],
@@ -684,7 +684,7 @@
   {
    "id": 15,
    "type": "row",
-   "title": "Outdoor",
+   "title": "Indoor air",
    "collapsed": false,
    "gridPos": {
     "x": 0,
@@ -697,7 +697,7 @@
   {
    "id": 16,
    "type": "stat",
-   "title": "Air quality index",
+   "title": "CO\u2082 now",
    "datasource": {
     "type": "prometheus",
     "uid": "victoriametrics"
@@ -705,6 +705,465 @@
    "gridPos": {
     "x": 0,
     "y": 31,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_carbon_dioxide_ppm",
+     "instant": true,
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ppm",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 1000
+       },
+       {
+        "color": "orange",
+        "value": 1500
+       },
+       {
+        "color": "red",
+        "value": 2000
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Below 1000 ppm fine, 1000-1500 ventilate, 1500-2000 stuffy, from 2000 bad (German Environment Agency: above 2000 unacceptable)."
+  },
+  {
+   "id": 17,
+   "type": "stat",
+   "title": "PM2.5 indoors now",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 31,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_pm25_u0xb5g_per_mu0xb3{entity!~\"sensor.outdoor_.*\"}",
+     "instant": true,
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "con\u00b5gm3",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "yellow",
+        "value": 15
+       },
+       {
+        "color": "orange",
+        "value": 25
+       },
+       {
+        "color": "red",
+        "value": 50
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "WHO 24-hour guideline: 15 \u03bcg/m\u00b3."
+  },
+  {
+   "id": 18,
+   "type": "stat",
+   "title": "Noise now",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 31,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_sound_pressure_db",
+     "instant": true,
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "dB",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 19,
+   "type": "stat",
+   "title": "Monitor data age",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 31,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "time() - max by (friendly_name) ({__name__=\"hass_last_updated_time_seconds\", entity=~\"sensor.*_co2\"})",
+     "instant": true,
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "textMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 900
+       },
+       {
+        "color": "red",
+        "value": 3600
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Time since the CO\u2082 value last changed. The monitor reports every few minutes; long gaps mean it lost Wi-Fi or the MQTT broker."
+  },
+  {
+   "id": 20,
+   "type": "timeseries",
+   "title": "CO\u2082",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 35,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_carbon_dioxide_ppm",
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ppm",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Below 1000 ppm fine, 1000-1500 ventilate, 1500-2000 stuffy, from 2000 bad."
+  },
+  {
+   "id": 21,
+   "type": "timeseries",
+   "title": "Particles indoors",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 35,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_pm25_u0xb5g_per_mu0xb3{entity!~\"sensor.outdoor_.*\"}",
+     "legendFormat": "{{friendly_name}}"
+    },
+    {
+     "refId": "B",
+     "expr": "hass_sensor_pm10_u0xb5g_per_mu0xb3{entity!~\"sensor.outdoor_.*\"}",
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "con\u00b5gm3",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 22,
+   "type": "timeseries",
+   "title": "VOC index",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 43,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_aqi_None{entity=~\"sensor.*etvoc\"}",
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "description": "Sensirion VOC index: 100 = the room's usual level, above 100 worse than usual, up to 500."
+  },
+  {
+   "id": 23,
+   "type": "timeseries",
+   "title": "Noise",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 43,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "hass_sensor_sound_pressure_db",
+     "legendFormat": "{{friendly_name}}"
+    }
+   ],
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "dB",
+     "custom": {
+      "lineWidth": 1,
+      "fillOpacity": 15,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      },
+      "axisSoftMin": 0
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 24,
+   "type": "row",
+   "title": "Outdoor",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 51,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 25,
+   "type": "stat",
+   "title": "Air quality index",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "victoriametrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 52,
     "w": 4,
     "h": 4
    },
@@ -778,7 +1237,7 @@
    "description": "Index of the nearest official station: 1 low, 2 moderate, 3 high, 4 very high."
   },
   {
-   "id": 17,
+   "id": 26,
    "type": "stat",
    "title": "UV index now",
    "datasource": {
@@ -787,7 +1246,7 @@
    },
    "gridPos": {
     "x": 4,
-    "y": 31,
+    "y": 52,
     "w": 4,
     "h": 4
    },
@@ -845,7 +1304,7 @@
    }
   },
   {
-   "id": 18,
+   "id": 27,
    "type": "stat",
    "title": "UV index max today",
    "datasource": {
@@ -854,7 +1313,7 @@
    },
    "gridPos": {
     "x": 8,
-    "y": 31,
+    "y": 52,
     "w": 4,
     "h": 4
    },
@@ -912,7 +1371,7 @@
    }
   },
   {
-   "id": 19,
+   "id": 28,
    "type": "stat",
    "title": "Saharan dust",
    "datasource": {
@@ -921,7 +1380,7 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 31,
+    "y": 52,
     "w": 4,
     "h": 4
    },
@@ -972,7 +1431,7 @@
    "description": "Open-Meteo model (CAMS). Dust events push PM10 up across the island."
   },
   {
-   "id": 20,
+   "id": 29,
    "type": "stat",
    "title": "Sea temperature",
    "datasource": {
@@ -981,7 +1440,7 @@
    },
    "gridPos": {
     "x": 16,
-    "y": 31,
+    "y": 52,
     "w": 4,
     "h": 4
    },
@@ -1023,7 +1482,7 @@
    }
   },
   {
-   "id": 21,
+   "id": 30,
    "type": "stat",
    "title": "Station data age",
    "datasource": {
@@ -1032,7 +1491,7 @@
    },
    "gridPos": {
     "x": 20,
-    "y": 31,
+    "y": 52,
     "w": 4,
     "h": 4
    },
@@ -1083,7 +1542,7 @@
    "description": "Time since the station values last changed. The station reports hourly; hours without changes mean the station or the page is down."
   },
   {
-   "id": 22,
+   "id": 31,
    "type": "timeseries",
    "title": "Particles (station) and Saharan dust (model)",
    "datasource": {
@@ -1092,7 +1551,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 35,
+    "y": 56,
     "w": 12,
     "h": 8
    },
@@ -1144,7 +1603,7 @@
    "description": "Official limits (1 low / 2 moderate / 3 high / 4 very high): PM10 50/100/200, PM2.5 25/50/100 \u03bcg/m\u00b3."
   },
   {
-   "id": 23,
+   "id": 32,
    "type": "timeseries",
    "title": "Gases (station)",
    "datasource": {
@@ -1153,7 +1612,7 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 35,
+    "y": 56,
     "w": 12,
     "h": 8
    },
@@ -1220,7 +1679,7 @@
    "description": "CO is on its own panel: its values are ~10x higher."
   },
   {
-   "id": 24,
+   "id": 33,
    "type": "timeseries",
    "title": "UV index",
    "datasource": {
@@ -1229,7 +1688,7 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 43,
+    "y": 64,
     "w": 8,
     "h": 8
    },
@@ -1275,7 +1734,7 @@
    }
   },
   {
-   "id": 25,
+   "id": 34,
    "type": "timeseries",
    "title": "Sea temperature",
    "datasource": {
@@ -1284,7 +1743,7 @@
    },
    "gridPos": {
     "x": 8,
-    "y": 43,
+    "y": 64,
     "w": 8,
     "h": 8
    },
@@ -1325,7 +1784,7 @@
    }
   },
   {
-   "id": 26,
+   "id": 35,
    "type": "timeseries",
    "title": "CO (station)",
    "datasource": {
@@ -1334,7 +1793,7 @@
    },
    "gridPos": {
     "x": 16,
-    "y": 43,
+    "y": 64,
     "w": 8,
     "h": 8
    },

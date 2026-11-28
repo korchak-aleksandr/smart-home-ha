@@ -51,7 +51,7 @@ docs/                       # step-by-step guides, read in order
   devices/                  # device support resources, generic guide per device class
   decisions/                # architecture decision records (why things are done this way)
 stack/                      # docker-compose files, service configs, .env.example
-  ha-packages/              # Home Assistant config as packages (metrics, outdoor sensors)
+  ha-packages/              # Home Assistant config as packages (metrics, outdoor sensors, indoor air index)
   ha-dashboards/            # Home Assistant YAML dashboards (details pages)
   ha-www/                   # static files served by HA under /local/ (icons)
 configs/                    # verified host config files by component (fail2ban, docker, netplan, ...)
@@ -72,8 +72,9 @@ examples — add your own model next to them without touching the generic docs.
 - [x] [Home Assistant container](docs/06-home-assistant.md)
 - [x] [Monitoring: VictoriaMetrics, Grafana, exporters, energy cost estimate](docs/08-monitoring.md)
 - [x] [Backups: daily verified archives on the backup drive, 7 days, metrics](docs/07-backups.md)
-- [ ] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅, [air quality monitor](docs/devices/air-quality.md) (planned)
+- [x] Wi-Fi devices: [robot vacuum](docs/devices/robot-vacuum.md) ✅, [dehumidifier](docs/devices/dehumidifier.md) ✅, [air quality monitor](docs/devices/air-quality.md) ✅
 - [x] [Presence (who is home) without location data](docs/devices/presence.md)
+- [x] [Indoor air quality index 1–4 (CO₂, particles, VOC)](docs/devices/air-quality.md#indoor-air-quality-index)
 - [x] [Outdoor conditions: official air-quality station, UV, Saharan dust, sea temperature](docs/devices/outdoor-conditions.md)
 - [ ] Matter, Zigbee (radio stick, Matter Server, Zigbee2MQTT)
 - [x] [MQTT broker (Mosquitto)](docs/06-home-assistant.md#9-mqtt-broker-mosquitto)

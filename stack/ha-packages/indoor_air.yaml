@@ -1,0 +1,58 @@
+# Indoor air quality index 1-4 (1 low, 2 moderate, 3 high, 4 very high), computed in Home Assistant.
+# Guide: docs/devices/air-quality.md#indoor-air-quality-index. File name: a slug (underscores), HA rejects "indoor-air".
+#
+# Method of the European and national air quality indexes: the overall index is the WORST sub-index, never an
+# average (good values don't cancel out a bad one). Inputs are found by device class, so no entity IDs are hard-coded:
+# every PM2.5, PM10 and CO2 sensor and every "*voc*" sensor, except outdoor ones (object ID starting with "outdoor_").
+# With several monitors, the worst room counts.
+# Pictures: stack/ha-www/air-quality/*.svg (the same colored circles as the outdoor index).
+# Not exported to metrics on purpose: Grafana shows the raw readings, this is a summary for the home page.
+
+template:
+  - triggers:
+      - trigger: time_pattern     # monitors report every few minutes; once a minute is enough
+        minutes: "/1"
+      - trigger: homeassistant
+        event: start
+    variables:
+      # Current value per pollutant: the maximum over all indoor sensors of that kind.
+      readings: >-
+        {%- set ns = namespace(v={}) -%}
+        {%- for key, dc in [('pm25', 'pm25'), ('pm10', 'pm10'), ('co2', 'carbon_dioxide')] -%}
+          {%- set vals = states.sensor | rejectattr('object_id', 'match', 'outdoor_')
+               | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', dc)
+               | map(attribute='state') | select('is_number') | map('float') | list -%}
+          {%- if vals %}{% set ns.v = dict(ns.v, **{key: vals | max}) %}{% endif -%}
+        {%- endfor -%}
+        {%- set voc = states.sensor | rejectattr('object_id', 'match', 'outdoor_') | selectattr('object_id', 'search', 'voc')
+             | map(attribute='state') | select('is_number') | map('float') | list -%}
+        {%- if voc %}{% set ns.v = dict(ns.v, voc=voc | max) %}{% endif -%}
+        {{ ns.v }}
+      # Sub-index per pollutant. Upper bounds of levels 1, 2, 3 (above the last one: level 4).
+      # PM: the official Cyprus scale (same as the outdoor station). CO2: German Environment Agency (UBA), 1000 / 2000
+      # ppm, with 1500 in between. VOC index (Sensirion, 100 = the room's usual level): lenient, it reacts to cooking.
+      sub_index: >-
+        {%- set limits = {'pm25': [25, 50, 100], 'pm10': [50, 100, 200], 'co2': [1000, 1500, 2000], 'voc': [150, 250, 400]} -%}
+        {%- set ns = namespace(l={}) -%}
+        {%- for k, x in readings.items() -%}
+          {%- set b = limits[k] -%}
+          {%- set ns.l = dict(ns.l, **{k: 1 if x < b[0] else 2 if x < b[1] else 3 if x < b[2] else 4}) -%}
+        {%- endfor -%}
+        {{ ns.l }}
+      level: "{{ sub_index.values() | max if sub_index else none }}"
+    sensor:
+      - name: Indoor air quality index
+        unique_id: indoor_air_quality_index
+        state: "{{ level }}"
+        availability: "{{ level is number }}"
+        picture: "/local/air-quality/{{ level }}.svg"
+        state_class: measurement
+        attributes:
+          # Which pollutants set the index (shown in the entity's details).
+          worst: >-
+            {%- set names = {'pm25': 'PM2.5', 'pm10': 'PM10', 'co2': 'CO₂', 'voc': 'VOC'} -%}
+            {%- set ns = namespace(w=[]) -%}
+            {%- for k, l in sub_index | dictsort if l == level %}{% set ns.w = ns.w + [names[k]] %}{% endfor -%}
+            {{ ns.w | join(', ') }}
+          sub_index: "{{ sub_index }}"
+          readings: "{{ readings }}"
